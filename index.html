@@ -9,15 +9,15 @@
 <meta name="description" content="{{ site.description }}">
 <style>
   :root {
-    --bg: #05070d;
-    --bg-soft: #0a0f1c;
-    --panel: rgba(16, 24, 42, 0.55);
-    --line: rgba(90, 170, 255, 0.14);
-    --txt: #c8d4ea;
-    --txt-dim: #6b7a99;
-    --accent: #38e8d0;
-    --accent-2: #4d8cff;
-    --glow: rgba(56, 232, 208, 0.45);
+    --bg: #0c1424;
+    --bg-soft: #142036;
+    --panel: rgba(30, 44, 74, 0.55);
+    --line: rgba(120, 190, 255, 0.18);
+    --txt: #dce6f7;
+    --txt-dim: #8fa0c0;
+    --accent: #45f0d6;
+    --accent-2: #5e9bff;
+    --glow: rgba(69, 240, 214, 0.5);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -54,9 +54,9 @@
     position: fixed;
     inset: 0;
     background:
-      radial-gradient(600px 400px at 15% 8%, rgba(77, 140, 255, 0.12), transparent 60%),
-      radial-gradient(500px 500px at 90% 15%, rgba(56, 232, 208, 0.10), transparent 60%),
-      radial-gradient(800px 600px at 50% 100%, rgba(77, 140, 255, 0.07), transparent 70%);
+      radial-gradient(700px 500px at 15% 5%, rgba(94, 155, 255, 0.22), transparent 62%),
+      radial-gradient(600px 550px at 90% 12%, rgba(69, 240, 214, 0.18), transparent 62%),
+      radial-gradient(900px 650px at 50% 100%, rgba(94, 155, 255, 0.12), transparent 72%);
     z-index: -1;
   }
 
@@ -111,6 +111,47 @@
     text-transform: uppercase;
     color: var(--accent);
     opacity: 0.75;
+  }
+
+  /* ---------- Hero banner ---------- */
+  .hero {
+    position: relative;
+    border: 1px solid var(--line);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 30px;
+    background: linear-gradient(120deg, rgba(30,44,74,0.7), rgba(18,32,54,0.4));
+    backdrop-filter: blur(10px);
+  }
+
+  .hero svg { display: block; width: 100%; height: auto; }
+
+  .hero .hero-text {
+    position: absolute;
+    left: 34px;
+    bottom: 28px;
+    right: 34px;
+  }
+
+  .hero .hero-text h1 {
+    font-size: clamp(24px, 4vw, 38px);
+    font-weight: 800;
+    letter-spacing: -0.6px;
+    line-height: 1.15;
+    color: #ffffff;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.4);
+  }
+
+  .hero .hero-text p {
+    margin-top: 10px;
+    max-width: 540px;
+    font-size: clamp(13px, 2vw, 15.5px);
+    color: var(--txt);
+    text-shadow: 0 1px 12px rgba(0,0,0,0.5);
+  }
+
+  @media (max-width: 560px) {
+    .hero .hero-text { left: 20px; right: 20px; bottom: 18px; }
   }
 
   /* ---------- Layout ---------- */
@@ -320,6 +361,76 @@
         <span class="dot"></span>
         <span class="name">{{ site.title }}</span>
         <span class="tag">Embodied · Lab Notes</span>
+      </div>
+    </div>
+
+    <!-- 具身科技风 SVG 横幅(内嵌,不依赖外部图片,永不失效) -->
+    <div class="hero">
+      <svg viewBox="0 0 1180 340" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="具身智能主题横幅">
+        <defs>
+          <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#162744"/>
+            <stop offset="0.55" stop-color="#0f1c33"/>
+            <stop offset="1" stop-color="#0a1322"/>
+          </linearGradient>
+          <radialGradient id="glowA" cx="0.78" cy="0.35" r="0.5">
+            <stop offset="0" stop-color="#45f0d6" stop-opacity="0.55"/>
+            <stop offset="1" stop-color="#45f0d6" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="glowB" cx="0.25" cy="0.7" r="0.6">
+            <stop offset="0" stop-color="#5e9bff" stop-opacity="0.45"/>
+            <stop offset="1" stop-color="#5e9bff" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#45f0d6"/>
+            <stop offset="1" stop-color="#5e9bff"/>
+          </linearGradient>
+        </defs>
+
+        <rect width="1180" height="340" fill="url(#bgGrad)"/>
+        <rect width="1180" height="340" fill="url(#glowA)"/>
+        <rect width="1180" height="340" fill="url(#glowB)"/>
+
+        <!-- 网格 -->
+        <g stroke="#78beff" stroke-opacity="0.09" stroke-width="1">
+          <path d="M0 40 H1180 M0 100 H1180 M0 160 H1180 M0 220 H1180 M0 280 H1180"/>
+          <path d="M60 0 V340 M180 0 V340 M300 0 V340 M420 0 V340 M540 0 V340 M660 0 V340 M780 0 V340 M900 0 V340 M1020 0 V340 M1140 0 V340"/>
+        </g>
+
+        <!-- 右侧:具身节点网络(类神经/传感拓扑) -->
+        <g stroke="url(#lineGrad)" stroke-opacity="0.5" stroke-width="1.4" fill="none">
+          <path d="M760 90 L880 60 L1000 120 L1080 90"/>
+          <path d="M760 90 L850 170 L1000 120"/>
+          <path d="M850 170 L930 250 L1050 230"/>
+          <path d="M1000 120 L1050 230"/>
+          <path d="M880 60 L930 250"/>
+          <path d="M760 90 L820 260"/>
+        </g>
+        <g fill="#45f0d6">
+          <circle cx="760" cy="90" r="5.5"/>
+          <circle cx="880" cy="60" r="4.5"/>
+          <circle cx="1000" cy="120" r="6.5"/>
+          <circle cx="1080" cy="90" r="4"/>
+          <circle cx="850" cy="170" r="5"/>
+          <circle cx="930" cy="250" r="6"/>
+          <circle cx="1050" cy="230" r="4.5"/>
+          <circle cx="820" cy="260" r="4"/>
+        </g>
+        <g fill="#5e9bff" opacity="0.85">
+          <circle cx="880" cy="60" r="2"/>
+          <circle cx="1080" cy="90" r="2"/>
+          <circle cx="1050" cy="230" r="2"/>
+        </g>
+
+        <!-- 脉冲圆环 -->
+        <circle cx="1000" cy="120" r="14" fill="none" stroke="#45f0d6" stroke-opacity="0.5" stroke-width="1.5">
+          <animate attributeName="r" values="8;30;8" dur="4s" repeatCount="indefinite"/>
+          <animate attributeName="stroke-opacity" values="0.6;0;0.6" dur="4s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+      <div class="hero-text">
+        <h1>{{ site.title }}</h1>
+        <p>{{ site.description }} —— 在具身智能、机器人与感知系统的交叉地带,记录学习与生活的痕迹。</p>
       </div>
     </div>
 
