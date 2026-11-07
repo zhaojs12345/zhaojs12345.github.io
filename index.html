@@ -1,0 +1,349 @@
+---
+---
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ site.title }}</title>
+<meta name="description" content="{{ site.description }}">
+<style>
+  :root {
+    --bg: #05070d;
+    --bg-soft: #0a0f1c;
+    --panel: rgba(16, 24, 42, 0.55);
+    --line: rgba(90, 170, 255, 0.14);
+    --txt: #c8d4ea;
+    --txt-dim: #6b7a99;
+    --accent: #38e8d0;
+    --accent-2: #4d8cff;
+    --glow: rgba(56, 232, 208, 0.45);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: -apple-system, "SF Pro Text", "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+    color: var(--txt);
+    background: var(--bg);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* 背景网格 + 传感器光晕 */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 85%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 85%);
+    z-index: -2;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(600px 400px at 20% 10%, rgba(77, 140, 255, 0.12), transparent 60%),
+      radial-gradient(500px 500px at 85% 20%, rgba(56, 232, 208, 0.10), transparent 60%),
+      radial-gradient(800px 600px at 50% 100%, rgba(77, 140, 255, 0.08), transparent 70%);
+    z-index: -1;
+  }
+
+  .wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 28px;
+  }
+
+  /* ---------- Hero ---------- */
+  header.hero {
+    min-height: 82vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    align-self: flex-start;
+    font-size: 12.5px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    padding: 7px 15px;
+    border: 1px solid rgba(56, 232, 208, 0.3);
+    border-radius: 100px;
+    background: rgba(56, 232, 208, 0.05);
+    backdrop-filter: blur(6px);
+  }
+
+  .badge .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px var(--glow);
+    animation: pulse 2.4s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.35; transform: scale(0.7); }
+  }
+
+  h1.title {
+    margin-top: 26px;
+    font-size: clamp(42px, 8vw, 78px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -1.5px;
+    background: linear-gradient(120deg, #ffffff 0%, #9fd4ff 45%, var(--accent) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  p.subtitle {
+    margin-top: 22px;
+    max-width: 560px;
+    font-size: clamp(16px, 2.3vw, 19px);
+    color: var(--txt-dim);
+  }
+
+  .cta {
+    margin-top: 38px;
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 13px 24px;
+    border-radius: 12px;
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-decoration: none;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+
+  .btn.primary {
+    color: #04131a;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    box-shadow: 0 8px 28px rgba(56, 232, 208, 0.25);
+  }
+
+  .btn.primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 14px 38px rgba(56, 232, 208, 0.4);
+  }
+
+  .btn.ghost {
+    color: var(--txt);
+    border: 1px solid var(--line);
+    background: var(--panel);
+  }
+
+  .btn.ghost:hover {
+    transform: translateY(-3px);
+    border-color: rgba(90, 170, 255, 0.4);
+  }
+
+  /* ---------- Section ---------- */
+  section { padding: 64px 0; }
+
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin-bottom: 34px;
+  }
+
+  .sec-head h2 {
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #eaf1ff;
+  }
+
+  .sec-head .idx {
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-size: 13px;
+    color: var(--accent);
+    opacity: 0.8;
+  }
+
+  .sec-head .rule {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, var(--line), transparent);
+  }
+
+  /* 文章卡片 */
+  .posts { display: grid; gap: 16px; }
+
+  .card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 24px 26px;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+    transition: transform 0.28s ease, border-color 0.28s ease, background 0.28s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: linear-gradient(var(--accent), var(--accent-2));
+    opacity: 0;
+    transition: opacity 0.28s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(90, 170, 255, 0.35);
+    background: rgba(22, 32, 55, 0.65);
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  .card .date {
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-size: 12.5px;
+    color: var(--accent);
+    letter-spacing: 1px;
+  }
+
+  .card h3 {
+    margin-top: 8px;
+    font-size: 19px;
+    font-weight: 600;
+    color: #eaf1ff;
+  }
+
+  .card p {
+    margin-top: 8px;
+    font-size: 14.5px;
+    color: var(--txt-dim);
+  }
+
+  .empty {
+    padding: 30px;
+    border: 1px dashed var(--line);
+    border-radius: 16px;
+    color: var(--txt-dim);
+    font-size: 14.5px;
+    text-align: center;
+  }
+
+  /* ---------- About ---------- */
+  .about-card {
+    padding: 34px 32px;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+  }
+
+  .about-card p { color: var(--txt-dim); font-size: 15.5px; }
+  .about-card strong { color: var(--txt); font-weight: 600; }
+
+  /* ---------- Footer ---------- */
+  footer {
+    padding: 44px 0 56px;
+    border-top: 1px solid var(--line);
+    margin-top: 40px;
+    color: var(--txt-dim);
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+  }
+
+  footer a { color: var(--txt-dim); text-decoration: none; transition: color 0.2s; }
+  footer a:hover { color: var(--accent); }
+
+  @media (max-width: 560px) {
+    header.hero { min-height: 72vh; }
+    footer { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <header class="hero">
+      <span class="badge"><span class="dot"></span>Embodied Intelligence · Lab Notes</span>
+      <h1 class="title">{{ site.title }}</h1>
+      <p class="subtitle">{{ site.description }} —— 在具身智能、机器人与感知系统的交叉地带,记录学习与生活的痕迹。</p>
+      <div class="cta">
+        <a class="btn primary" href="#posts">阅读文章 →</a>
+        <a class="btn ghost" href="#about">关于我</a>
+      </div>
+    </header>
+
+    <section id="posts">
+      <div class="sec-head">
+        <span class="idx">01</span>
+        <h2>最新文章</h2>
+        <span class="rule"></span>
+      </div>
+      <div class="posts">
+        {% for post in site.posts %}
+        <a class="card" href="{{ post.url | relative_url }}">
+          <span class="date">{{ post.date | date: "%Y.%m.%d" }}</span>
+          <h3>{{ post.title }}</h3>
+          {% if post.excerpt %}<p>{{ post.excerpt | strip_html | truncate: 90 }}</p>{% endif %}
+        </a>
+        {% else %}
+        <div class="empty">暂无文章,很快就会有新的内容。</div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="sec-head">
+        <span class="idx">02</span>
+        <h2>关于</h2>
+        <span class="rule"></span>
+      </div>
+      <div class="about-card">
+        <p>你好,我是 <strong>{{ site.author.name }}</strong>。这里是我的个人空间,
+        用来沉淀关于<strong>具身智能</strong>、机器学习与日常思考的笔记。
+        相信把复杂的系统拆开、理解、再搭回去的过程,本身就很迷人。</p>
+      </div>
+    </section>
+
+    <footer>
+      <span>© {{ site.time | date: "%Y" }} {{ site.author.name }}</span>
+      <span><a href="https://github.com/zhaojs12345" target="_blank" rel="noopener">GitHub</a></span>
+    </footer>
+
+  </div>
+</body>
+</html>
