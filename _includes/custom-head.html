@@ -1,0 +1,111 @@
+<style>
+  /* 让 minima 文章页沿用主页的具身科技风背景与配色 */
+  :root {
+    --bg: #1a2742;
+    --line: rgba(140, 200, 255, 0.22);
+    --txt: #e8eefb;
+    --txt-dim: #a3b2d0;
+    --accent: #4ef5db;
+    --accent-2: #7ab0ff;
+    --glow: rgba(78, 245, 219, 0.5);
+  }
+
+  html, body {
+    background: var(--bg) !important;
+    color: var(--txt) !important;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* 背景网格 */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 46px 46px;
+    mask-image: radial-gradient(ellipse 90% 50% at 50% 0%, #000 40%, transparent 85%);
+    -webkit-mask-image: radial-gradient(ellipse 90% 50% at 50% 0%, #000 40%, transparent 85%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* 光晕 */
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(700px 500px at 15% 5%, rgba(122, 176, 255, 0.22), transparent 62%),
+      radial-gradient(600px 550px at 90% 12%, rgba(78, 245, 219, 0.16), transparent 62%),
+      radial-gradient(900px 650px at 50% 100%, rgba(122, 176, 255, 0.12), transparent 72%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* 让内容浮在背景之上 */
+  .site-header, .page-content, .site-footer, .wrapper {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 头部与底部 */
+  .site-header {
+    background: rgba(26, 39, 66, 0.72);
+    backdrop-filter: blur(10px);
+    border-top: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .site-footer {
+    background: transparent;
+    border-top: 1px solid var(--line);
+    color: var(--txt-dim);
+  }
+
+  .site-title, .site-title:visited { color: var(--txt) !important; }
+  .site-nav .page-link { color: var(--txt-dim) !important; }
+  .site-nav .page-link:hover { color: var(--accent) !important; }
+
+  /* 正文排版 */
+  .page-content { color: var(--txt); }
+  .post-title, .post-content h1, .post-content h2,
+  .post-content h3, .post-content h4 { color: #ffffff; }
+  .post-content { color: var(--txt); }
+  .post-meta { color: var(--txt-dim); }
+
+  .post-content a { color: var(--accent); }
+  .post-content a:hover { color: var(--accent-2); }
+
+  .post-content strong { color: #ffffff; }
+
+  /* 代码块 */
+  .post-content pre, .post-content code,
+  .highlight, .highlighter-rouge .highlight {
+    background: rgba(12, 20, 36, 0.8) !important;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: #dbe6ff;
+  }
+  .post-content code { padding: 2px 6px; }
+
+  /* 引用 */
+  .post-content blockquote {
+    color: var(--txt-dim);
+    border-left: 3px solid var(--accent);
+    background: rgba(46, 64, 100, 0.35);
+    border-radius: 0 8px 8px 0;
+  }
+
+  /* 表格 */
+  .post-content table { color: var(--txt); border-color: var(--line); }
+  .post-content table th {
+    background: rgba(46, 64, 100, 0.5);
+    color: #ffffff;
+    border-color: var(--line);
+  }
+  .post-content table td { border-color: var(--line); }
+  .post-content table tr:nth-child(even) { background: rgba(46, 64, 100, 0.25); }
+
+  hr { border-color: var(--line); }
+</style>
