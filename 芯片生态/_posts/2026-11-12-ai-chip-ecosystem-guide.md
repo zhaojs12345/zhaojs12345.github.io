@@ -2,7 +2,6 @@
 layout: post
 title: "国产 AI 芯片生态全景:SDK、框架适配与开发者社区指南"
 date: 2026-11-12 10:00:00 +0800
-categories: 芯片生态
 excerpt: "覆盖英伟达 CUDA 生态与海光、华为昇腾、寒武纪、昆仑芯、燧原、摩尔线程、沐曦、天数智芯等国产 AI 芯片的 SDK 版本体系、主流框架适配状态与开发者社区入口。"
 ---
 
@@ -13,6 +12,8 @@ excerpt: "覆盖英伟达 CUDA 生态与海光、华为昇腾、寒武纪、昆�
 ## 一、NVIDIA CUDA 生态(基准参照)
 
 NVIDIA 是当前 AI 训练推理的基准生态，其他国产芯片普遍以"兼容 CUDA 语义"为目标对齐。
+
+> 本节只列核心 SDK 与框架适配的速查表。CUDA 生态从底层 Driver/Runtime API、PTX/SASS 编译链，到数学库、CUTLASS 模板库、TensorRT/NCCL 以及 RAPIDS 数据科学栈的逐模块详解，见分支长文:[CUDA 完整生态详解:从底层驱动到上层框架的全景梳理]({% post_url 2026-11-12-cuda-ecosystem-deep-dive %})。
 
 ### 核心 SDK
 
@@ -47,6 +48,8 @@ NVIDIA 是当前 AI 训练推理的基准生态，其他国产芯片普遍以"�
 
 海光走 ROCm 兼容路线，推出 DTK（Deep Computing Toolkit），是对 ROCm 的二次适配与扩展，使大量 HIP 代码无需修改即可运行。
 
+> 📖 分支深度解读:[海光 DCU 完整生态详解]({% post_url 2026-11-12-hygon-dcu-ecosystem %})
+
 ### 核心 SDK
 
 | 组件 | 版本 | 对应关系 |
@@ -77,6 +80,8 @@ NVIDIA 是当前 AI 训练推理的基准生态，其他国产芯片普遍以"�
 ## 三、华为昇腾（Ascend NPU）
 
 华为昇腾生态最为完整，拥有从编译器（ATC/CANN）到训练框架（MindSpore）再到推理引擎（MindIE）的完整链路，同时维护 torch_npu 以接入 PyTorch 生态。
+
+> 📖 分支深度解读:[华为昇腾 CANN 完整生态详解]({% post_url 2026-11-12-ascend-cann-ecosystem %})
 
 ### 核心 SDK
 
@@ -120,6 +125,8 @@ CANN 7.0 → torch_npu 2.1.0 → Python 3.8 / 3.9
 
 寒武纪推出 Neuware SDK，以 BANG C 为自定义算子语言，torch_mlu（也称 Catch）作为 PyTorch 接入层。
 
+> 📖 分支深度解读:[寒武纪 MLU 完整生态详解]({% post_url 2026-11-12-cambricon-mlu-ecosystem %})
+
 ### 核心 SDK
 
 | 组件 | 版本 | 说明 |
@@ -157,6 +164,8 @@ Neuware 3.5 → torch_mlu 1.17 → PyTorch 1.13
 
 昆仑芯脱胎于百度 AI 加速器，专为推理和训练优化，XRE/XDK 是其核心运行时和开发套件，PaddlePaddle 是最成熟的上层框架。
 
+> 📖 分支深度解读:[昆仑芯 XPU 完整生态详解]({% post_url 2026-11-12-kunlunxin-xpu-ecosystem %})
+
 ### 核心 SDK
 
 | 组件 | 版本 | 说明 |
@@ -186,6 +195,8 @@ Neuware 3.5 → torch_mlu 1.17 → PyTorch 1.13
 ## 六、燧原科技 GCU（太初系列）
 
 燧原的芯片品牌为**太初**（Teco），GCU（Graph Compute Unit）定位训练推理一体，TopsRider 是完整的软件栈名称。
+
+> 📖 分支深度解读:[燧原 GCU（太初）完整生态详解]({% post_url 2026-11-12-enflame-gcu-ecosystem %})
 
 ### 核心 SDK
 
@@ -222,6 +233,8 @@ TopsRider 3.0 → torch_gcu 2.1 → PyTorch 2.1 → Python 3.8 / 3.10
 ## 七、摩尔线程 MUSA（MTT S80/S4000 系列）
 
 摩尔线程的 MUSA（Moore Threads Unified System Architecture）接口设计高度对标 CUDA，API 语义几乎一一对应，迁移门槛低是其核心卖点。
+
+> 📖 分支深度解读:[摩尔线程 MUSA 完整生态详解]({% post_url 2026-11-12-mthreads-musa-ecosystem %})
 
 ### 核心 SDK
 
@@ -261,6 +274,8 @@ MUSA SDK 2.1 → torch_musa 2.0 → PyTorch 2.0
 
 沐曦采用 MACA（MetaX Accelerated Computing Architecture）软件栈，同样以高 CUDA 兼容性为卖点，支持直接编译大量 CUDA 代码。
 
+> 📖 分支深度解读:[沐曦 MACA 完整生态详解]({% post_url 2026-11-12-metax-maca-ecosystem %})
+
 ### 核心 SDK
 
 | 组件 | 版本 | 说明 |
@@ -288,6 +303,8 @@ MUSA SDK 2.1 → torch_musa 2.0 → PyTorch 2.0
 ## 九、天数智芯 GPU（天垓 100 系列）
 
 天数智芯面向 HPC 与 AI 双向市场，IXUCA SDK 是其软件栈名称，iluvatar-corex 是开源生态入口。
+
+> 📖 分支深度解读:[天数智芯 IXUCA 完整生态详解]({% post_url 2026-11-12-iluvatar-ixuca-ecosystem %})
 
 ### 核心 SDK
 

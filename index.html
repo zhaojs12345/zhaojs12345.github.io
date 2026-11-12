@@ -214,6 +214,41 @@
     font-weight: 600;
   }
 
+  /* ---------- Category sections ---------- */
+  .cat-section { margin-bottom: 36px; }
+  .cat-section:last-of-type { margin-bottom: 0; }
+
+  .cat-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .cat-head .cat-bar {
+    width: 4px;
+    height: 20px;
+    border-radius: 100px;
+    background: linear-gradient(var(--accent), var(--accent-2));
+    box-shadow: 0 0 10px var(--glow);
+  }
+
+  .cat-head h2 {
+    font-size: 20px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: #eaf1ff;
+  }
+
+  .cat-head .cat-count {
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-size: 12px;
+    color: var(--txt-dim);
+    padding: 2px 10px;
+    border: 1px solid var(--line);
+    border-radius: 100px;
+  }
+
   /* ---------- Post list ---------- */
   .posts { display: grid; gap: 16px; }
 
@@ -360,7 +395,7 @@
       <div class="brand">
         <span class="dot"></span>
         <span class="name">{{ site.title }}</span>
-        <span class="tag">Embodied · Lab Notes</span>
+        <span class="tag">Embodied AI · Chip Ecosystem</span>
       </div>
     </div>
 
@@ -430,7 +465,7 @@
       </svg>
       <div class="hero-text">
         <h1>{{ site.title }}</h1>
-        <p>{{ site.description }} —— 在具身智能、机器人与感知系统的交叉地带,记录学习与生活的痕迹。</p>
+        <p>{{ site.description }} —— 在<strong>具身智能</strong>与<strong>AI 芯片生态</strong>两条主线上,记录学习与思考的痕迹。</p>
       </div>
     </div>
 
@@ -439,35 +474,37 @@
       <!-- 主体:文章列表 + 筛选 -->
       <main>
         <div class="toolbar">
-          <input type="text" id="search" class="search" placeholder="搜索文章标题或摘要…" autocomplete="off">
-          <div class="filters" id="filters">
-            <button class="chip active" data-cat="all">全部</button>
-            {% assign cats = site.posts | map: "categories" | join: "," | split: "," | uniq %}
-            {% for cat in cats %}
-              {% if cat != "" %}<button class="chip" data-cat="{{ cat }}">{{ cat }}</button>{% endif %}
-            {% endfor %}
-          </div>
+          <input type="text" id="search" class="search" placeholder="搜索全部文章的标题或摘要…" autocomplete="off">
         </div>
 
-        <div class="posts" id="posts">
-          {% for post in site.posts %}
-          <a class="card post-item"
-             href="{{ post.url | relative_url }}"
-             data-cat="{{ post.categories | join: ' ' }}"
-             data-title="{{ post.title | downcase }}"
-             data-excerpt="{{ post.excerpt | strip_html | downcase }}">
-            <div class="meta">
-              <span class="date">{{ post.date | date: "%Y.%m.%d" }}</span>
-              {% for c in post.categories %}<span class="cat">{{ c }}</span>{% endfor %}
-            </div>
-            <h3>{{ post.title }}</h3>
-            {% if post.excerpt %}<p>{{ post.excerpt | strip_html | truncate: 100 }}</p>{% endif %}
-          </a>
-          {% else %}
-          <div class="empty">暂无文章,很快就会有新的内容。</div>
-          {% endfor %}
-          <div class="no-result" id="noResult">没有匹配的文章,换个关键词试试。</div>
-        </div>
+        {% assign sections = "具身智能,芯片生态" | split: "," %}
+        {% for sec in sections %}
+        <section class="cat-section" data-section="{{ sec }}">
+          <div class="cat-head">
+            <span class="cat-bar"></span>
+            <h2>{{ sec }}</h2>
+            <span class="cat-count">{{ site.categories[sec] | size }} 篇</span>
+          </div>
+          <div class="posts">
+            {% for post in site.categories[sec] %}
+            <a class="card post-item"
+               href="{{ post.url | relative_url }}"
+               data-title="{{ post.title | downcase }}"
+               data-excerpt="{{ post.excerpt | strip_html | downcase }}">
+              <div class="meta">
+                <span class="date">{{ post.date | date: "%Y.%m.%d" }}</span>
+                {% for c in post.categories %}<span class="cat">{{ c }}</span>{% endfor %}
+              </div>
+              <h3>{{ post.title }}</h3>
+              {% if post.excerpt %}<p>{{ post.excerpt | strip_html | truncate: 100 }}</p>{% endif %}
+            </a>
+            {% else %}
+            <div class="empty">这个分区暂无文章,很快就会有新的内容。</div>
+            {% endfor %}
+          </div>
+        </section>
+        {% endfor %}
+        <div class="no-result" id="noResult">没有匹配的文章,换个关键词试试。</div>
       </main>
 
       <!-- 角落:关于 + 友情链接 -->
@@ -475,7 +512,7 @@
         <div class="side-card">
           <h4>关于</h4>
           <p>你好,我是 <strong>{{ site.author.name }}</strong>。
-          这里沉淀关于<strong>具身智能</strong>、机器学习与日常思考的笔记。</p>
+          这里沉淀两条主线的笔记:<strong>具身智能</strong>(机器人、感知、控制与学习),以及 <strong>AI 芯片生态</strong>(CUDA 与国产芯片的 SDK、框架适配)。</p>
         </div>
         <div class="side-card">
           <h4>友情链接</h4>
@@ -497,36 +534,32 @@
 <script>
   (function () {
     var search = document.getElementById('search');
-    var filters = document.getElementById('filters');
     var posts = Array.prototype.slice.call(document.querySelectorAll('.post-item'));
+    var sections = Array.prototype.slice.call(document.querySelectorAll('.cat-section'));
     var noResult = document.getElementById('noResult');
-    var activeCat = 'all';
 
     function apply() {
       var q = (search.value || '').trim().toLowerCase();
       var shown = 0;
       posts.forEach(function (p) {
-        var cats = (p.getAttribute('data-cat') || '').split(' ');
-        var matchCat = activeCat === 'all' || cats.indexOf(activeCat) !== -1;
         var text = (p.getAttribute('data-title') || '') + ' ' + (p.getAttribute('data-excerpt') || '');
-        var matchText = q === '' || text.indexOf(q) !== -1;
-        var show = matchCat && matchText;
+        var show = q === '' || text.indexOf(q) !== -1;
         p.style.display = show ? '' : 'none';
         if (show) shown++;
+      });
+      // 搜索时隐藏无命中结果的整个分区
+      sections.forEach(function (sec) {
+        var visible = sec.querySelectorAll('.post-item').length === 0
+          ? true
+          : Array.prototype.some.call(sec.querySelectorAll('.post-item'), function (p) {
+              return p.style.display !== 'none';
+            });
+        sec.style.display = (q !== '' && !visible) ? 'none' : '';
       });
       noResult.style.display = (posts.length && shown === 0) ? 'block' : 'none';
     }
 
     search.addEventListener('input', apply);
-
-    filters.addEventListener('click', function (e) {
-      var btn = e.target.closest('.chip');
-      if (!btn) return;
-      filters.querySelectorAll('.chip').forEach(function (c) { c.classList.remove('active'); });
-      btn.classList.add('active');
-      activeCat = btn.getAttribute('data-cat');
-      apply();
-    });
   })();
 </script>
 </body>
