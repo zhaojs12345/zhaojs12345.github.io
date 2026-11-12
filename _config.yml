@@ -1,5 +1,6 @@
 title: my blob
 description: Learning and Life
 theme: minima
+future: true
 author:
   name: manic pancake
