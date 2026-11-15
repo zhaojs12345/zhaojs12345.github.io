@@ -32,6 +32,8 @@ BI 系列定位 HPC + AI 通用计算,内含矩阵/向量计算单元,采用 HBM
 
 > 底层 kernel 编程的公开细节有限,多数用户通过 torch_corex 高层算子即可,无需直接写 kernel。
 
+> **关于架构图**:天数智芯官网(Nuxt SPA)产品页只提供天垓/智铠的 3D 芯片封装渲染图,未公开可直接下载的天垓 GPGPU 微架构框图或 IXUCA/Corex 软件栈框图。架构信息以官方产品页与开发者文档为准:[developer.iluvatar.com](https://developer.iluvatar.com)、[docs.iluvatar.com](https://docs.iluvatar.com);开源适配见 [Deep-Spark](https://github.com/Deep-Spark)。
+
 ## 三、编译工具链
 
 IXUCA 提供编译器工具链(基于 LLVM),把设备代码编译为天垓 GPU 可执行码,角色对应 nvcc。配套调试与性能分析工具(对应 cuda-gdb / Nsight),以及设备监控工具查看 GPU 利用率、显存、功耗(角色类似 nvidia-smi)。

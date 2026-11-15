@@ -34,6 +34,8 @@ MACA 的关键能力是对 CUDA 的高兼容:
 ### 线程与内存层次
 与 GPU 通用模型一致:Grid → Block → Warp → Thread;寄存器 → Shared Memory → L2 → Global Memory(HBM)。语义贴合 CUDA。
 
+> **关于架构图**:沐曦官网产品页与开发者文档站(JS 渲染的 SPA)均未公开可直接下载的曦云 GPGPU 微架构框图或 MXMACA 软件栈框图,官网主图为大模型生成的装饰性芯片渲染图(非架构图)。架构信息以官方产品页与开发者文档为准:[developer.metax-tech.com](https://developer.metax-tech.com)、[docs.metax-tech.com](https://docs.metax-tech.com)。
+
 ## 三、编译工具链
 
 ### cu-bridge / hipMACA 编译路径

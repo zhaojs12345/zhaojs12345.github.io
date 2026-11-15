@@ -40,6 +40,8 @@ Register → Shared Memory/L1 → L2 → Global Memory(显存)
 
 - 寄存器、Shared Memory、Constant Memory、Global Memory 的层次与语义基本对应 CUDA
 
+> **关于架构图**:摩尔线程官网产品页以营销特性图(banner、功能卡片)为主,未公开可直接下载的"春晓"全功能 GPU 四大引擎(图形/AI 计算/视频编解码/物理)硬件框图。官方对 MUSA 架构的描述见 S3000/S4000 产品页的"MUSA 架构"版块:[mthreads.com/product/S4000](https://mthreads.com/product/S4000),软件栈说明见 MUSA 文档:[docs.mthreads.com](https://docs.mthreads.com)。
+
 ## 三、编译工具链
 
 ### 1. mcc(MUSA Compiler)

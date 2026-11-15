@@ -40,6 +40,8 @@ excerpt: "逐模块梳理寒武纪 MLU 思元系列的软件生态:CNRT/CNDrv �
 
 寒武纪的内存层次比 GPU 更显式地区分"神经元"与"权重"存储,BANG C 编程时需要手动编排这几级存储间的搬运。
 
+> **关于架构图**:寒武纪官网产品页只提供产品外观图与功能图标,未公开可直接下载的 MLUarch 硬件框图。真正标注 IPU/MPU/Cluster/NOC 的架构框图在官方《寒武纪 BANG C 开发者手册》(Cambricon BANG C Developer Guide)PDF 的"硬件架构"章节中(多核处理器整体架构 + NRAM/WRAM/SRAM 存储层次图),需从官方开发者社区获取:[developer.cambricon.com](https://developer.cambricon.com)(文档中心 → BANG C 开发指南)。此处不放第三方转绘/带水印的版本。
+
 ## 三、编译工具链
 
 ### 1. CNCC / BANG 编译器

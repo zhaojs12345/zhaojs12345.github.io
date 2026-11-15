@@ -17,6 +17,10 @@ excerpt: "逐模块梳理海光 DCU 的软件生态:底层 ROCm 兼容运行时�
 ### 1. ROCm 兼容架构
 海光 DCU 的软件栈本质是 ROCm 的一个下游发行版。ROCm(Radeon Open Compute)是 AMD 的开源 GPU 计算平台,定位对标 CUDA。海光 DTK 对其做了针对自家 DCU 硬件的适配、性能调优与扩展。
 
+![海光 DCU 软硬件分层架构:硬件(海光 x86 CPU + 深度计算处理器)→ 驱动与工具 → 编译器(LLVM/OpenCL/HIP)→ 库函数 → 框架及应用](/assets/chips/hygon-dcu-stack.jpg)
+
+> 图:海光官方公布的 DCU 软硬件栈架构,自底向上五层——**硬件层**是海光 x86 CPU + 海光深度计算处理器(DCU)的异构平台;**驱动与工具层**含驱动/vBios/API、RunTime、调试工具;**编译器层**为 LLVM + OpenCL + HIP 异构编程接口;**库函数层**含 hipBLAS/hipRand/hipFFT 数学库、MIOpen、Eigen、RCCL 等;**框架及应用层**对接主流学习框架与国内异构应用。这张图直观体现了海光"ROCm/HIP 兼容、类 CUDA"的路线。来源:海光官网 [产品·加速卡页面](https://www.hygon.cn/product/accelerator)。
+
 ### 2. DTK(Deep Computing Toolkit)
 海光软件栈的总称,相当于 NVIDIA 的 CUDA Toolkit + AMD 的 ROCm 的角色。
 - DTK 23.04 / 24.04 / 24.10 等版本,大致对应上游 ROCm 5.x / 6.x

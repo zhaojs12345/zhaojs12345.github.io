@@ -22,6 +22,10 @@ excerpt: "逐模块梳理华为昇腾 Ascend NPU 的软件生态:达芬奇架构
 
 此外还有 AI CPU(处理不适合 AI Core 的算子)、DVPP(数字视觉预处理,做图像编解码/缩放)等协处理单元。
 
+![昇腾 AI Core 抽象架构:AIC(Cube/FixPipe + L0/L1)与 AIV(Vector/UB)双核结构](/assets/chips/ascend-aicore-cvarch.png)
+
+> 图:昇腾 AI Core 的 Cube-Vector 抽象架构。左侧 **AIC**(AI Cube 核)含 Cube 矩阵单元、FixPipe 与 L0/L1 缓冲,右侧 **AIV**(AI Vector 核)含 Vector 单元与 Unified Buffer(UB),二者经 HBM 交换数据——这正是昇腾 A2/A3 代把矩阵与向量拆成独立核(Cube-Vector 分离)的结构。来源:华为官方 [AscendNPU IR 文档](https://ascendnpu-ir.gitcode.com/en/developer_guide/features/cv_optimization.html)。更完整的 Cube/Vector/Scalar 三单元结构见 [CANN 官方文档·AI Core 抽象硬件架构](https://www.hiascend.com/document/detail/zh/CANNCommunityEdition/910/developmentguide/opdevg/ascendcopdevg/atlas_ascendc_10_0010.html)。
+
 ### 2. CANN(Compute Architecture for Neural Networks)
 昇腾软件栈的核心,相当于 CUDA Toolkit 的角色,是运行时 + 编译器 + 算子库 + 工具的总集合。
 - CANN 7.0 / 8.0 / 8.1 等版本持续迭代

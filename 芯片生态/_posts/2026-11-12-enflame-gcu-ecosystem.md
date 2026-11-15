@@ -35,6 +35,8 @@ DTU(Deep Thinking Unit,深度思考单元)是燧原邃思架构的核心计算�
 
 > 燧原底层 kernel 编程的公开细节相对有限,实际以 TopsRider 文档为准。
 
+> **关于架构图**:燧原现行官网已下线早期云燧 T20/i20 的产品页,现有产品页与软件页未公开可直接下载的邃思 DTU(GCU-CARA/SIP)硬件微架构框图。官网唯一的架构图是 TopsRider **软件栈**架构图(非芯片硬件框图),见驭算软件页 [enflame-tech.com/software/topsrider](https://www.enflame-tech.com/software/topsrider);硬件框图需从官方产品简介/白皮书获取,文档中心 [docs.enflame.cn](https://docs.enflame.cn)。
+
 ## 三、编译工具链
 
 ### TopsCC

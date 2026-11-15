@@ -34,6 +34,8 @@ excerpt: "逐模块梳理昆仑芯 XPU 的软件生态:XRE 运行时、XPU Kerne
 
 > 昆仑芯的底层 kernel 编程细节公开资料相对有限,实际开发以 XDK 文档为准;多数用户通过 PaddlePaddle/torch_xpu 的高层算子即可,无需直接写 kernel。
 
+> **关于架构图**:昆仑芯官网(WordPress 站)产品页只提供板卡产品照片,未公开可直接下载的 XPU-R / SDNN+Cluster 内部架构框图。架构信息散见于 R200/R300 产品页与开发者文档:产品页 [kunlunxin.com/product/274.html](https://www.kunlunxin.com/product/274.html),开发者门户 [developer.kunlunxin.com](https://developer.kunlunxin.com)。
+
 ## 三、编译工具链
 
 ### XDK(Kunlun Developer Kit)

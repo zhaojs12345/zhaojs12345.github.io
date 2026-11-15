@@ -398,6 +398,30 @@ NVIDIA 官方容器镜像仓库(ngc.nvidia.com)。
 | Hopper (sm_90) | H100/H800 | FP8 Tensor Core、TMA、wgmma、Thread Block Cluster、NVLink 4.0 |
 | Blackwell (sm_100) | B100/B200 | FP4 Tensor Core、第五代 NVLink、NVLink Switch System |
 
+### 官方架构图
+
+国产芯片几乎都以"对齐 CUDA 语义"为目标,因此把 NVIDIA 近两代的官方架构图放在这里作为对照基准。
+
+**Hopper(H100 / GH100,2022)**
+
+![NVIDIA GH100 完整芯片框图:8 组 GPC、每 GPC 含多个 TPC/SM,中间 L2 Cache,两侧 HBM3 控制器,底部 NVLink](/assets/chips/nvidia-h100-full-gpu.png)
+
+> 图:GH100 完整芯片框图(满配 144 个 SM)。顶部 PCIe 5.0 主机接口 + GigaThread 引擎,8 个 GPC(图形处理簇)环绕中央 L2 Cache,两侧为 HBM3 显存控制器,底部 High-Speed Hub 接 18 条 NVLink。来源:NVIDIA 官方博客 [NVIDIA Hopper Architecture In-Depth](https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/)。
+
+![NVIDIA H100 SM 内部架构:4 个处理块,每块含 Warp Scheduler、寄存器文件、INT32/FP32/FP64 单元与第四代 Tensor Core,底部 TMA + 256KB L1/Shared Memory](/assets/chips/nvidia-h100-sm.png)
+
+> 图:H100 的 SM(流多处理器)内部结构。4 个处理块各含 Warp Scheduler/Dispatch、16K×32bit 寄存器文件、INT32/FP32/FP64 CUDA 核与第四代 Tensor Core;底部是本文第二节提到的 **TMA(Tensor Memory Accelerator)** 与 256KB L1/Shared Memory。来源:同上 NVIDIA 官方博客。
+
+**Blackwell Ultra(B300 代,2025)**
+
+![NVIDIA Blackwell Ultra GPU 芯片框图:双 die 经 10TB/s Die-to-Die 互联,每侧含多个 GPC 与 L2,外围 HBM3E 控制器,两侧 NVLink 与 NVLink-C2C](/assets/chips/nvidia-blackwell-ultra-chip.png)
+
+> 图:Blackwell Ultra GPU 芯片框图。两颗 reticle 极限大小的 die 通过 10 TB/s 的 Die-to-Die 互联合成一颗逻辑 GPU,每侧多个 GPC + L2,外围 288GB HBM3E;左侧第五代 NVLink(1.8 TB/s),右侧 NVLink-C2C(900 GB/s 连 Grace CPU)。来源:NVIDIA 官方博客 [Inside NVIDIA Blackwell Ultra](https://developer.nvidia.com/blog/inside-nvidia-blackwell-ultra-the-chip-powering-the-ai-factory-era/)。
+
+![NVIDIA Blackwell Ultra SM 内部架构:4 个处理块,每块含 64KB Tensor Memory(TMEM)与第五代 Tensor Core,底部 TMA + 256KB L1/Shared Memory](/assets/chips/nvidia-blackwell-ultra-sm.png)
+
+> 图:Blackwell Ultra 的 SM 结构。相比 H100,每个处理块新增 **64KB Tensor Memory(TMEM)**,Tensor Core 升级到第五代(支持 NVFP4)。来源:同上 NVIDIA 官方博客。
+
 ---
 
 ## 总结导图
