@@ -253,15 +253,18 @@
   .posts { display: grid; gap: 16px; }
 
   .card {
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
     text-decoration: none;
     color: inherit;
-    padding: 22px 24px;
+    padding: 14px 20px;
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: 12px;
     background: var(--panel);
     backdrop-filter: blur(10px);
-    transition: transform 0.28s ease, border-color 0.28s ease, background 0.28s ease;
+    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
     position: relative;
     overflow: hidden;
   }
@@ -273,50 +276,70 @@
     width: 3px;
     background: linear-gradient(var(--accent), var(--accent-2));
     opacity: 0;
-    transition: opacity 0.28s ease;
+    transition: opacity 0.22s ease;
   }
 
   .card:hover {
-    transform: translateY(-4px);
+    transform: translateX(4px);
     border-color: rgba(90, 170, 255, 0.35);
     background: rgba(22, 32, 55, 0.65);
   }
 
   .card:hover::before { opacity: 1; }
 
-  .card .meta {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .card .date {
-    font-family: "SF Mono", "JetBrains Mono", monospace;
-    font-size: 12.5px;
-    color: var(--accent);
-    letter-spacing: 1px;
-  }
-
-  .card .cat {
-    font-size: 11.5px;
-    color: var(--txt-dim);
-    padding: 2px 10px;
-    border: 1px solid var(--line);
-    border-radius: 100px;
-  }
-
   .card h3 {
-    margin-top: 10px;
-    font-size: 19px;
+    font-size: 16px;
     font-weight: 600;
     color: #eaf1ff;
+    line-height: 1.5;
   }
 
-  .card p {
-    margin-top: 8px;
-    font-size: 14.5px;
+  .card .go {
     color: var(--txt-dim);
+    font-size: 15px;
+    flex-shrink: 0;
+    transition: color 0.22s ease;
+  }
+  .card:hover .go { color: var(--accent); }
+
+  /* ---------- Pager ---------- */
+  .pager {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+  .pager:empty { display: none; }
+
+  .pager button {
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--txt-dim);
+    font-size: 13.5px;
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(6px);
+  }
+  .pager button:hover:not(:disabled) {
+    color: var(--txt);
+    border-color: rgba(90, 170, 255, 0.35);
+  }
+  .pager button.active {
+    color: #04131a;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    border-color: transparent;
+    font-weight: 600;
+  }
+  .pager button:disabled {
+    opacity: 0.35;
+    cursor: default;
   }
 
   .empty, .no-result {
@@ -479,7 +502,7 @@
 
         {% assign sections = "具身智能,芯片生态" | split: "," %}
         {% for sec in sections %}
-        <section class="cat-section" data-section="{{ sec }}">
+        <section class="cat-section" data-section="{{ sec }}" data-per-page="10">
           <div class="cat-head">
             <span class="cat-bar"></span>
             <h2>{{ sec }}</h2>
@@ -491,17 +514,14 @@
                href="{{ post.url | relative_url }}"
                data-title="{{ post.title | downcase }}"
                data-excerpt="{{ post.excerpt | strip_html | downcase }}">
-              <div class="meta">
-                <span class="date">{{ post.date | date: "%Y.%m.%d" }}</span>
-                {% for c in post.categories %}<span class="cat">{{ c }}</span>{% endfor %}
-              </div>
               <h3>{{ post.title }}</h3>
-              {% if post.excerpt %}<p>{{ post.excerpt | strip_html | truncate: 100 }}</p>{% endif %}
+              <span class="go">↗</span>
             </a>
             {% else %}
             <div class="empty">这个分区暂无文章,很快就会有新的内容。</div>
             {% endfor %}
           </div>
+          <nav class="pager" aria-label="{{ sec }}分页"></nav>
         </section>
         {% endfor %}
         <div class="no-result" id="noResult">没有匹配的文章,换个关键词试试。</div>
@@ -534,32 +554,83 @@
 <script>
   (function () {
     var search = document.getElementById('search');
-    var posts = Array.prototype.slice.call(document.querySelectorAll('.post-item'));
-    var sections = Array.prototype.slice.call(document.querySelectorAll('.cat-section'));
+    var allPosts = Array.prototype.slice.call(document.querySelectorAll('.post-item'));
     var noResult = document.getElementById('noResult');
+
+    // 为每个分区建立独立的分页状态
+    var sections = Array.prototype.slice.call(document.querySelectorAll('.cat-section')).map(function (el) {
+      return {
+        el: el,
+        perPage: parseInt(el.getAttribute('data-per-page'), 10) || 10,
+        pager: el.querySelector('.pager'),
+        posts: Array.prototype.slice.call(el.querySelectorAll('.post-item')),
+        page: 1
+      };
+    });
+
+    function matches(p, q) {
+      if (q === '') return true;
+      var text = (p.getAttribute('data-title') || '') + ' ' + (p.getAttribute('data-excerpt') || '');
+      return text.indexOf(q) !== -1;
+    }
+
+    function renderPager(sec, totalPages) {
+      var pager = sec.pager;
+      pager.innerHTML = '';
+      if (totalPages <= 1) return;
+
+      function mkBtn(label, page, opts) {
+        opts = opts || {};
+        var b = document.createElement('button');
+        b.textContent = label;
+        if (opts.active) b.className = 'active';
+        if (opts.disabled) b.disabled = true;
+        else b.addEventListener('click', function () {
+          sec.page = page;
+          apply();
+          sec.el.querySelector('.cat-head').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        pager.appendChild(b);
+      }
+
+      mkBtn('‹', sec.page - 1, { disabled: sec.page === 1 });
+      for (var i = 1; i <= totalPages; i++) {
+        mkBtn(String(i), i, { active: i === sec.page });
+      }
+      mkBtn('›', sec.page + 1, { disabled: sec.page === totalPages });
+    }
 
     function apply() {
       var q = (search.value || '').trim().toLowerCase();
-      var shown = 0;
-      posts.forEach(function (p) {
-        var text = (p.getAttribute('data-title') || '') + ' ' + (p.getAttribute('data-excerpt') || '');
-        var show = q === '' || text.indexOf(q) !== -1;
-        p.style.display = show ? '' : 'none';
-        if (show) shown++;
-      });
-      // 搜索时隐藏无命中结果的整个分区
+      var totalShown = 0;
+
       sections.forEach(function (sec) {
-        var visible = sec.querySelectorAll('.post-item').length === 0
-          ? true
-          : Array.prototype.some.call(sec.querySelectorAll('.post-item'), function (p) {
-              return p.style.display !== 'none';
-            });
-        sec.style.display = (q !== '' && !visible) ? 'none' : '';
+        var matched = sec.posts.filter(function (p) { return matches(p, q); });
+        var totalPages = Math.max(1, Math.ceil(matched.length / sec.perPage));
+        if (sec.page > totalPages) sec.page = totalPages;
+
+        var start = (sec.page - 1) * sec.perPage;
+        var end = start + sec.perPage;
+
+        sec.posts.forEach(function (p) { p.style.display = 'none'; });
+        matched.slice(start, end).forEach(function (p) { p.style.display = ''; });
+
+        // 搜索且本分区无命中时,隐藏整个分区
+        sec.el.style.display = (q !== '' && matched.length === 0) ? 'none' : '';
+        renderPager(sec, totalPages);
+        totalShown += matched.length;
       });
-      noResult.style.display = (posts.length && shown === 0) ? 'block' : 'none';
+
+      noResult.style.display = (allPosts.length && totalShown === 0) ? 'block' : 'none';
     }
 
-    search.addEventListener('input', apply);
+    search.addEventListener('input', function () {
+      // 搜索变化时各分区回到第一页
+      sections.forEach(function (sec) { sec.page = 1; });
+      apply();
+    });
+
+    apply();
   })();
 </script>
 </body>
