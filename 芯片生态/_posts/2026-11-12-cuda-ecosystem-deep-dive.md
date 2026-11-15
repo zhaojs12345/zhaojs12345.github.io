@@ -14,6 +14,62 @@ NVIDIA 的 CUDA 生态是当前 AI 训练与推理的事实基准,几乎所有�
 
 ![CUDA 软件栈架构全景:自顶向下 8 层主栈(高层框架/绑定 → AI 推理训练部署 → 中间库 → 执行内存管理 → Runtime API → Driver API → 内核驱动 → GPU 硬件),右侧为编译工具链、调试分析与编程模型三个旁路模块](/assets/chips/cuda-software-stack.png)
 
+## 生态总览导图
+
+```
+CUDA 生态
+├── 底层基础     Driver API → PTX/SASS → NVVM IR
+├── 编译工具     nvcc / NVRTC / ptxas / Nsight / Sanitizer
+├── 内存管理     Streams/Events/Graphs/VMM/GPUDirect
+├── 数学库       cuBLAS(Lt) / cuDNN / cuFFT / cuSPARSE / cuSolver / cuTENSOR
+├── 模板库       Thrust / CUB / CUTLASS / CuTe
+├── AI 推理      TensorRT / TensorRT-LLM / TransformerEngine / Triton Server
+├── 多 GPU 通信  NCCL / NVSHMEM / NVLink / GPUDirect RDMA
+├── 科学计算     AmgX / cuQuantum / cuDSS / NVPL
+├── 视觉媒体     NPP / nvJPEG / NVENC/NVDEC / VPI / OptiX
+├── 语言绑定     PyCUDA / Numba / CuPy / Triton DSL
+├── 数据科学     RAPIDS (cuDF/cuML/cuGraph/RAFT)
+└── 部署         NGC / Container Toolkit / Triton Server
+```
+
+这个生态的核心设计哲学是**分层**:底层硬件特性通过 Driver/Runtime 暴露,数学库在其上提供高性能原语,框架再在数学库之上构建算子,最终用户通过 PyTorch/JAX 等高层 API 使用。每层都可以单独"打穿"——需要极致性能时可从 PyTorch 一路下探到 CUTLASS 甚至手写 SASS。下文即按这张导图自底向上逐层展开。
+
+## 硬件架构基础
+
+整个软件栈最终都落到 GPU 硬件上,因此先把 NVIDIA 架构演进与近两代官方架构图放在最前面作为对照基准(国产芯片也几乎都以"对齐 CUDA 语义"为目标)。
+
+| 架构 | 代表产品 | 关键 CUDA 特性 |
+|------|---------|--------------|
+| Volta (sm_70) | V100 | Tensor Core 1.0(FP16)、Independent Thread Scheduling |
+| Turing (sm_75) | T4/RTX 20xx | INT8/INT4 Tensor Core、RT Core、TF32 |
+| Ampere (sm_80/86) | A100/RTX 30xx | TF32/BF16 Tensor Core、A100 结构化稀疏、MIG、NVLink 3.0 |
+| Hopper (sm_90) | H100/H800 | FP8 Tensor Core、TMA、wgmma、Thread Block Cluster、NVLink 4.0 |
+| Blackwell (sm_100) | B100/B200 | FP4 Tensor Core、第五代 NVLink、NVLink Switch System |
+
+### 官方架构图
+
+**Hopper(H100 / GH100,2022)**
+
+![NVIDIA GH100 完整芯片框图:8 组 GPC、每 GPC 含多个 TPC/SM,中间 L2 Cache,两侧 HBM3 控制器,底部 NVLink](/assets/chips/nvidia-h100-full-gpu.png)
+
+> 图:GH100 完整芯片框图(满配 144 个 SM)。顶部 PCIe 5.0 主机接口 + GigaThread 引擎,8 个 GPC(图形处理簇)环绕中央 L2 Cache,两侧为 HBM3 显存控制器,底部 High-Speed Hub 接 18 条 NVLink。来源:NVIDIA 官方博客 [NVIDIA Hopper Architecture In-Depth](https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/)。
+
+![NVIDIA H100 SM 内部架构:4 个处理块,每块含 Warp Scheduler、寄存器文件、INT32/FP32/FP64 单元与第四代 Tensor Core,底部 TMA + 256KB L1/Shared Memory](/assets/chips/nvidia-h100-sm.png)
+
+> 图:H100 的 SM(流多处理器)内部结构。4 个处理块各含 Warp Scheduler/Dispatch、16K×32bit 寄存器文件、INT32/FP32/FP64 CUDA 核与第四代 Tensor Core;底部是后文「编程模型核心概念」一节介绍的 **TMA(Tensor Memory Accelerator)** 与 256KB L1/Shared Memory。来源:同上 NVIDIA 官方博客。
+
+**Blackwell Ultra(B300 代,2025)**
+
+![NVIDIA Blackwell Ultra GPU 芯片框图:双 die 经 10TB/s Die-to-Die 互联,每侧含多个 GPC 与 L2,外围 HBM3E 控制器,两侧 NVLink 与 NVLink-C2C](/assets/chips/nvidia-blackwell-ultra-chip.png)
+
+> 图:Blackwell Ultra GPU 芯片框图。两颗 reticle 极限大小的 die 通过 10 TB/s 的 Die-to-Die 互联合成一颗逻辑 GPU,每侧多个 GPC + L2,外围 288GB HBM3E;左侧第五代 NVLink(1.8 TB/s),右侧 NVLink-C2C(900 GB/s 连 Grace CPU)。来源:NVIDIA 官方博客 [Inside NVIDIA Blackwell Ultra](https://developer.nvidia.com/blog/inside-nvidia-blackwell-ultra-the-chip-powering-the-ai-factory-era/)。
+
+![NVIDIA Blackwell Ultra SM 内部架构:4 个处理块,每块含 64KB Tensor Memory(TMEM)与第五代 Tensor Core,底部 TMA + 256KB L1/Shared Memory](/assets/chips/nvidia-blackwell-ultra-sm.png)
+
+> 图:Blackwell Ultra 的 SM 结构。相比 H100,每个处理块新增 **64KB Tensor Memory(TMEM)**,Tensor Core 升级到第五代(支持 NVFP4)。来源:同上 NVIDIA 官方博客。
+
+---
+
 ## 一、底层基础层
 
 ### 1. CUDA Driver API
@@ -97,26 +153,129 @@ PTX → SASS 汇编器,`nvcc` 内部调用,也可独立使用。
 ### 4. cuobjdump / nvdisasm
 反汇编工具,查看 fatbin 内的 PTX 和 SASS。
 
-### 5. Nsight Compute(ncu)
-逐 kernel 的硬件性能分析器(替代旧版 nvprof)。
-- 采集 HW counter:SM occupancy、memory throughput、warp stall 分布、L1/L2 hit rate
-- Roofline 分析、Source Correlation(SASS ↔ 源码行)
-- 命令行:`ncu --set full -o profile.ncu-rep ./app`
+### 5. Nsight 性能分析工具(ncu / nsys)
+NVIDIA 的两款性能分析器,层级互补:nsys 先做系统级定位,ncu 再做单 kernel 下钻。
 
-### 6. Nsight Systems(nsys)
-系统级时间线分析器。
-- CPU + GPU 时间线,CUDA stream、kernel、memcpy、NVTX range 全景
-- 适合找 CPU-GPU overlap 问题、stream 并发度
+**ncu 与 nsys**
+
+- Nsight Systems(nsys)—— 系统级时间线分析器
+- CPU + GPU 时间线,CUDA stream、kernel、memcpy、NVTX range 全景,适合分析 CPU-GPU overlap 问题、stream 并发度、kernel 启动/通信瓶颈,开销低,可近实时采集整个应用
 - 命令行:`nsys profile --trace=cuda,nvtx ./app`
 
-### 7. Compute Sanitizer(原 cuda-memcheck)
+- Nsight Compute(ncu)—— 逐 kernel 硬件性能分析器(替代旧版 nvprof)
+- 采集 HW counter:SM occupancy、memory throughput、warp stall 分布、L1/L2 hit rate,Roofline 分析、Source Correlation(SASS ↔ 源码行),开销高,单 kernel 常需重放上百次
+- 命令行:`ncu --set full -o profile.ncu-rep ./app`
+
+**核心区别**
+
+| 维度 | **nsys** (Nsight Systems) | **ncu** (Nsight Compute) |
+|------|---------------------------|--------------------------|
+| 定位 | 系统级 timeline 分析 | 单 kernel 微观分析 |
+| 粒度 | 整个应用的时间线 | 单个 CUDA kernel 内部 |
+| 关注点 | CPU/GPU 协同、调度、数据流 | SM 占用率、访存、指令、warp 效率 |
+| 开销 | 低(可近实时采集) | 高(单 kernel 常需重放上百次) |
+| 输出 | timeline (.nsys-rep) | kernel 指标报告 (.ncu-rep) |
+
+**nsys 看什么(宏观)**
+
+- kernel / memcpy / API 调用的时间线和先后关系
+- CPU 和 GPU 之间的空隙(GPU 是否被喂饱、是否在等 CPU)
+- H2D/D2H 拷贝与计算是否重叠、stream 并发情况
+- NCCL 通信、CUDA API 阻塞、同步等待
+- 回答"时间花在哪、瓶颈在哪个阶段"
+
+**ncu 看什么(微观)**
+
+- 单个 kernel 的 SM / 显存带宽利用率(Roofline)
+- compute-bound 还是 memory-bound
+- warp stall 原因、寄存器/shared memory 占用、occupancy
+- 访存合并、L1/L2 命中率、指令吞吐
+- 回答"这个 kernel 为什么慢、怎么优化"
+
+**配合用法**:先用 nsys 跑全程找出耗时最多/调用最频繁的 kernel,再用 ncu 单独深挖那几个热点 kernel 定位具体瓶颈,避免一上来就对所有 kernel 做高开销的 ncu 采集。
+
+#### nsys 输出字段说明
+
+nsys 生成 `.nsys-rep`,常用 `nsys stats report.nsys-rep` 导出几张表。
+
+**CUDA GPU Kernel Summary(`gpukernsum`)—— 看哪个 kernel 耗时:**
+
+| 字段 | 含义 |
+|------|------|
+| `Time(%)` | 该 kernel 占 GPU 总时间百分比 —— **先看这列找热点** |
+| `Total Time` | 累计耗时 |
+| `Instances` / `Calls` | 调用次数 |
+| `Avg / Med / Min / Max` | 单次耗时的均值/中位/极值(抖动大说明有 shape 不均或竞争) |
+| `StdDev` | 耗时标准差 |
+| `Name` | kernel 名(Triton 生成的名字带 `_kernel` 后缀) |
+
+**CUDA API Summary(`cudaapisum`)—— 看 CPU 侧 API 开销:**
+`cudaMalloc`、`cudaMemcpyAsync`、`cudaLaunchKernel` 等每个 API 的总耗时/次数。`cudaLaunchKernel` 占比高 = kernel 启动太频繁(融合不够);`cudaMalloc` 频繁 = 没用显存池。
+
+**Memory Operation Summary(`gpumemtimesum` / `gpumemsizesum`):**
+`[CUDA memcpy HtoD]` / `[DtoH]` / `[DtoD]` 的耗时和字节数。H2D/D2H 占比高 = CPU-GPU 数据搬运是瓶颈。
+
+**判读逻辑**:GPU Kernel 总时间 ÷ 墙钟时间 = GPU 利用率。利用率低但 API/memcpy 高 → GPU 在等 CPU 喂数据,不是算力瓶颈。
+
+#### ncu 输出字段说明
+
+ncu 生成 `.ncu-rep`,核心是几个 section。
+
+**GPU Speed Of Light(SOL)—— 最该先看的总览:**
+
+| 字段 | 含义 |
+|------|------|
+| `Compute (SM) Throughput [%]` | SM 计算单元利用率 |
+| `Memory Throughput [%]` | 显存带宽利用率 |
+| `DRAM Throughput [%]` | 对 HBM 的实际带宽占比 |
+| `Duration` | 本 kernel 执行时间 |
+| `Achieved Occupancy` | 实际达到的 occupancy |
+
+判读:Memory% 远高于 Compute% → **memory-bound**(优化访存/融合);反之 **compute-bound**(优化指令/用 Tensor Core);两个都低 → 延迟瓶颈(occupancy 或 stall 问题)。
+
+**Launch / Occupancy Statistics:**
+
+| 字段 | 含义 |
+|------|------|
+| `Grid Size` / `Block Size` | 启动配置 |
+| `Registers Per Thread` | 每线程寄存器数 —— 太高会限制 occupancy |
+| `Shared Memory Per Block` | 每 block 共享内存用量 |
+| `Theoretical / Achieved Occupancy [%]` | 理论 vs 实际活跃 warp 占比;差距大说明负载不均或尾部效应 |
+| `Waves Per SM` | 波数,<1 说明 SM 没喂满(grid 太小) |
+
+**Memory Workload Analysis:**
+
+| 字段 | 含义 |
+|------|------|
+| `L1/TEX Cache Hit Rate` / `L2 Hit Rate` | 缓存命中率 |
+| `Memory Throughput [GB/s]` | 实际访存带宽 |
+| `Global Load/Store` 的 `Sectors/Req` | 每次请求的 sector 数 —— **反映访存是否合并**,理想值小,大说明 stride 布局导致非合并访存 |
+
+**Scheduler / Warp State Statistics(找 stall 原因):**
+
+| 字段 | 含义 |
+|------|------|
+| `Warp Cycles Per Issued Instruction` | 每发射指令平均等待周期 |
+| `Stall [原因]` | warp 停顿原因分布:`Long Scoreboard`(等显存,memory-bound 信号)、`Barrier`(等同步)、`MIO Throttle`、`Not Selected` |
+| `Issued Warp Per Scheduler` | 调度器每周期发射的 warp 数 |
+
+**Compute Workload Analysis:**
+`Executed IPC`(每周期指令数)、各 pipe(FMA/ALU/Tensor)利用率。Tensor pipe 高 = 在用 Tensor Core。
+
+**判读路线:**
+1. 先看 SOL 判 compute-bound 还是 memory-bound
+2. memory-bound → 查 L2 命中率 + `Sectors/Req`(访存是否合并)
+3. compute-bound → 查 IPC + Tensor pipe 利用率
+4. 两个都低 → 查 Occupancy + Warp Stall 原因(通常是 `Long Scoreboard` 等显存,或寄存器溢出限制 occupancy)
+
+### 6. Compute Sanitizer(原 cuda-memcheck)
 运行时错误检测套件:
 - `memcheck`:越界/未初始化内存访问
 - `racecheck`:Shared Memory race condition
 - `synccheck`:`__syncthreads()` 死锁检测
 - `initcheck`:全局内存未初始化读取
 
-### 8. cuda-gdb
+### 7. cuda-gdb
 GPU 调试器,支持在 device kernel 内设断点、查看寄存器/shared mem。
 
 ---
@@ -366,14 +525,144 @@ Python DSL,编写高效 GPU kernel,自动处理 tiling/vectorization。
 - 比 CUDA C++ 开发更快,性能接近手写 CUTLASS
 - PyTorch Inductor 生成 Triton kernel
 
-### 7. RAPIDS(cuDF / cuML / cuGraph)
+Triton 介于 PyTorch(太高层,难控制)和 CUDA C++(太底层,开发慢)之间。关键差异:CUDA 要你管理**单个 thread**,Triton 让你管理 **block(一组数据)**,thread 内部的调度、访存合并、shared memory 分配交给编译器自动做。
+
+| 方案 | 开发成本 | 性能 | 控制粒度 |
+|------|---------|------|---------|
+| PyTorch 算子组合 | 低 | 一般(kernel 启动多、访存冗余) | 低 |
+| CUDA C++ | 高(要管线程/shared mem/同步) | 高 | 全部手动 |
+| **Triton** | 中 | 接近手写 CUDA | block 级 |
+
+**算子实例:`fused_add_rms_norm`(残差加 + RMSNorm 融合)**
+
+这是 vLLM 里最常见的融合模式:本来「残差相加」+「RMSNorm」两步、两个 kernel、两趟显存读写,融合成一个 kernel 一趟搞定。基础的 whole-row kernel(一行一个 program):
+
+```python
+@libentry()
+@triton.jit(do_not_specialize=["eps"])
+def fused_add_rms_norm_kernel(
+    input_ptr, residual_ptr, w_ptr,
+    in_stride_r, in_stride_c, r_stride_r, r_stride_c,
+    N, eps, BLOCK_SIZE: tl.constexpr,
+):
+    pid = ext.program_id(0)                  # 我是第几行
+    input_ptr    += pid * in_stride_r        # 指针移到这一行
+    residual_ptr += pid * r_stride_r
+
+    cols = tl.arange(0, BLOCK_SIZE)          # 这一行的列 [0..BLOCK_SIZE)
+    mask = cols < N                          # 边界保护(N 不一定是 2 的幂)
+
+    x        = tl.load(input_ptr    + cols*in_stride_c, mask=mask, other=0.0).to(tl.float32)
+    residual = tl.load(residual_ptr + cols*r_stride_c, mask=mask, other=0.0).to(tl.float32)
+
+    added = x + residual                     # ① 残差相加
+    tl.store(residual_ptr + cols*r_stride_c, added, mask=mask)   # residual 原地写回
+
+    sum_sq   = tl.sum(added*added, axis=0)   # ② 行内归约求平方和
+    variance = sum_sq / N
+    rrms     = 1.0 / tl.sqrt(variance + eps) # RMS 的倒数
+
+    weight = tl.load(w_ptr + cols, mask=mask, other=0.0)
+    output = (added * rrms * weight).to(compute_dtype)          # ③ 归一化 * 权重
+    tl.store(input_ptr + cols*in_stride_c, output, mask=mask)   # input 原地写回
+```
+
+对应 Triton 编程模型要点:
+
+| 代码 | 含义 |
+|------|------|
+| `program_id(0)` + `grid=(M,)` | 启动 M 个 program,每个负责张量的**一整行**(一个 token 的 hidden_dim)。block 级思维:不管 thread,只管「这一块数据」 |
+| `cols = tl.arange(0, BLOCK_SIZE)` | 对**整行向量**一次性操作,编译器负责拆成 thread 做访存合并 |
+| `mask = cols < N` | 用 mask 代替 `if` 处理边界,`BLOCK_SIZE = next_power_of_2(N)` 可能比 N 大 |
+| `.to(tl.float32)` | fp16/bf16 输入**升到 fp32 累加**,避免归约精度损失,最后再降回去 |
+| `tl.sum(..., axis=0)` | 行内归约,Triton 自动用 shared memory + warp shuffle 实现 |
+| 两次 `tl.store` 原地写 | 融合的价值:`added` 算一次,既写回 residual 又喂给归一化,省掉中间 tensor 和一趟显存往返 |
+
+**一个算子三个 kernel —— host dispatch 是关键**
+
+同一个算子文件里有**三份 kernel**,host 函数按 shape 选最快的:
+
+| kernel | 适用 shape | 为什么 |
+|--------|-----------|--------|
+| **whole-row** | 普通中小 N(N ≤ 16384) | 一行一 program,整行放进寄存器,最简单最快 |
+| **2D persistent** | N≤128 且 M≥262144(短行、超多行) | 行太短太多,一行一 program 会启动几百万个 program 开销爆炸。改成固定 4096 个常驻 program,每个循环吃多行(`BLOCK_M=4`),一次归约 4 行 |
+| **tiled 两趟** | 超大 N(>32768) | 一行放不进寄存器/shared mem,分块:第一趟累加平方和,第二趟再读一遍做归一化 |
+
+```python
+def fused_add_rms_norm(x, residual, normalized_shape, weight, eps=1e-5):
+    M = math.prod(x.shape[:dim])    # 行数
+    N = math.prod(normalized_shape) # 行宽
+    x = x.contiguous(); residual = residual.contiguous()  # 规整 layout
+    if _prefer_2d_persistent(M, N):  ...  # 按 shape 路由到三条路径之一
+    elif _prefer_whole_row(x, M, N): ...
+    else:                            ...  # tiled
+    return x, residual
+```
+
+生产级 Triton 算子的真实样子:kernel 只是计算核,**host 的 shape 路由 + autotune 才决定性能**。单个 `@triton.jit` 好写,难的是针对不同 shape 维持高性能。FlashAttention、FlagGems、PyTorch Inductor 生成的 kernel 都是这个范式。
+
+### 7. Triton 算子如何派发到 vLLM(以 FlagGems-vllm / vllm-plugin-fl 为例)
+
+Triton 写的算子库要接入推理框架,vLLM 的调用链是:
+
+```
+vLLM  →  vllm-plugin-fl  →  flag_gems.enable()  +  flaggems_vllm.<op>()
+```
+
+派发分两条完全不同的路。
+
+**路径 A:通用算子 —— 劫持 PyTorch dispatch(`flag_gems.enable()`)**
+
+「偷梁换柱」式派发,模型代码一行不用改。
+
+1. **vLLM 加载插件**:启动时扫描 entry points 组 `vllm.general_plugins`。插件在 `pyproject.toml` 注册入口,vLLM 调 `load_general_plugins()` 时执行插件注册函数。`VLLM_PLUGINS=fl` 控制只加载哪个插件。
+2. **插件调 `enable()` 注册到 aten 库**:把算子注册进 `torch.library.Library("aten", "IMPL")`,核心一句 `lib.impl(key, fn, "CUDA")` —— 把 `aten::<op>` 在 CUDA dispatch key 上的实现替换成 Triton 实现。之后模型里 `torch.rms_norm` / `torch.matmul` 等调用被 PyTorch dispatcher 自动路由到 Triton kernel,调用方无感知。
+3. **按设备/vendor 过滤**:用 `DeviceDetector` 拿 `dispatch_key`,非 NVIDIA vendor 剔掉本芯片没实现的算子;支持 `only_enable(include=[...])` 白名单和 `exclude` 黑名单。
+
+**路径 B:vLLM 专用融合算子 —— 直接调用 / CustomOp**
+
+像 `fused_add_rms_norm`、`fused_experts_impl`、`grouped_topk` 这种大融合 kernel 不走 aten 劫持(PyTorch 没有对应 aten 算子),直接 import 函数替换:
+
+```python
+import flaggems_vllm
+flaggems_vllm.fused_experts_impl(...)   # 插件/模型层显式调用
+```
+
+vLLM 侧用 **CustomOp 多后端分发**。每个算子是 `CustomOp` 子类,有 `forward_native`(torch 参考)、`forward_cuda`、`forward_oot`(out-of-tree,给第三方后端)等。`dispatch_forward` 按平台一次性选定实现:
+
+```python
+def dispatch_forward(self, compile_native):
+    enabled = self._enforce_enable or self.enabled()
+    if not enabled:
+        return self.forward_native          # 回退到 torch 原生
+    if current_platform.is_out_of_tree():
+        return self.forward_oot             # 第三方后端走这里
+    else:
+        return self.forward_cuda
+```
+
+out-of-tree 插件通过 `register_oot` 把实现注册进 `op_registry_oot`;`enabled()` 查 `CompilationConfig` 的 `enabled_custom_ops`/`disabled_custom_ops` 决定是否启用。
+
+**两条路对比**
+
+| | 路径 A(通用算子) | 路径 B(vLLM 融合算子) |
+|--|------|------|
+| 机制 | `torch.library` 劫持 aten dispatch key | 直接函数调用 / CustomOp 后端选择 |
+| 入口 | `flag_gems.enable()` / `flaggems_vllm.enable()` | `import flaggems_vllm; flaggems_vllm.<op>()` |
+| 模型是否改代码 | 不改,PyTorch 自动路由 | 需显式调用或注册 CustomOp |
+| 粒度 | 整库算子批量替换 | 单个高价值融合 kernel |
+| 选择/过滤 | `include`/`exclude` YAML + vendor 过滤 | `VLLM_PLUGINS` + CompilationConfig 开关 |
+
+一句话:通用算子靠劫持 PyTorch dispatch 无感替换;vLLM 专用融合 kernel 靠显式调用 + CustomOp 后端分发。vllm-plugin-fl 在 vLLM 启动时把这两条路都接上。
+
+### 8. RAPIDS(cuDF / cuML / cuGraph)
 GPU 加速数据科学套件。
 - **cuDF**:GPU DataFrame(pandas 兼容)
 - **cuML**:GPU 机器学习(sklearn 兼容,KMeans/DBSCAN/PCA 等)
 - **cuGraph**:GPU 图分析(PageRank/BFS/社区检测)
 - 底层大量使用 Thrust/CUB/RAFT
 
-### 8. RAFT
+### 9. RAFT
 Rapids 的基础机器学习原语库(ANN、距离计算、矩阵操作),供 cuML/cuVS 使用。
 
 ---
@@ -389,61 +678,3 @@ NVIDIA 官方容器镜像仓库(ngc.nvidia.com)。
 使容器内可访问 GPU,`--gpus all` 参数背后的实现。
 
 ### 3. Triton Inference Server(已提及)
-
----
-
-## 十三、架构演进对照
-
-| 架构 | 代表产品 | 关键 CUDA 特性 |
-|------|---------|--------------|
-| Volta (sm_70) | V100 | Tensor Core 1.0(FP16)、Independent Thread Scheduling |
-| Turing (sm_75) | T4/RTX 20xx | INT8/INT4 Tensor Core、RT Core、TF32 |
-| Ampere (sm_80/86) | A100/RTX 30xx | TF32/BF16 Tensor Core、A100 结构化稀疏、MIG、NVLink 3.0 |
-| Hopper (sm_90) | H100/H800 | FP8 Tensor Core、TMA、wgmma、Thread Block Cluster、NVLink 4.0 |
-| Blackwell (sm_100) | B100/B200 | FP4 Tensor Core、第五代 NVLink、NVLink Switch System |
-
-### 官方架构图
-
-国产芯片几乎都以"对齐 CUDA 语义"为目标,因此把 NVIDIA 近两代的官方架构图放在这里作为对照基准。
-
-**Hopper(H100 / GH100,2022)**
-
-![NVIDIA GH100 完整芯片框图:8 组 GPC、每 GPC 含多个 TPC/SM,中间 L2 Cache,两侧 HBM3 控制器,底部 NVLink](/assets/chips/nvidia-h100-full-gpu.png)
-
-> 图:GH100 完整芯片框图(满配 144 个 SM)。顶部 PCIe 5.0 主机接口 + GigaThread 引擎,8 个 GPC(图形处理簇)环绕中央 L2 Cache,两侧为 HBM3 显存控制器,底部 High-Speed Hub 接 18 条 NVLink。来源:NVIDIA 官方博客 [NVIDIA Hopper Architecture In-Depth](https://developer.nvidia.com/blog/nvidia-hopper-architecture-in-depth/)。
-
-![NVIDIA H100 SM 内部架构:4 个处理块,每块含 Warp Scheduler、寄存器文件、INT32/FP32/FP64 单元与第四代 Tensor Core,底部 TMA + 256KB L1/Shared Memory](/assets/chips/nvidia-h100-sm.png)
-
-> 图:H100 的 SM(流多处理器)内部结构。4 个处理块各含 Warp Scheduler/Dispatch、16K×32bit 寄存器文件、INT32/FP32/FP64 CUDA 核与第四代 Tensor Core;底部是本文第二节提到的 **TMA(Tensor Memory Accelerator)** 与 256KB L1/Shared Memory。来源:同上 NVIDIA 官方博客。
-
-**Blackwell Ultra(B300 代,2025)**
-
-![NVIDIA Blackwell Ultra GPU 芯片框图:双 die 经 10TB/s Die-to-Die 互联,每侧含多个 GPC 与 L2,外围 HBM3E 控制器,两侧 NVLink 与 NVLink-C2C](/assets/chips/nvidia-blackwell-ultra-chip.png)
-
-> 图:Blackwell Ultra GPU 芯片框图。两颗 reticle 极限大小的 die 通过 10 TB/s 的 Die-to-Die 互联合成一颗逻辑 GPU,每侧多个 GPC + L2,外围 288GB HBM3E;左侧第五代 NVLink(1.8 TB/s),右侧 NVLink-C2C(900 GB/s 连 Grace CPU)。来源:NVIDIA 官方博客 [Inside NVIDIA Blackwell Ultra](https://developer.nvidia.com/blog/inside-nvidia-blackwell-ultra-the-chip-powering-the-ai-factory-era/)。
-
-![NVIDIA Blackwell Ultra SM 内部架构:4 个处理块,每块含 64KB Tensor Memory(TMEM)与第五代 Tensor Core,底部 TMA + 256KB L1/Shared Memory](/assets/chips/nvidia-blackwell-ultra-sm.png)
-
-> 图:Blackwell Ultra 的 SM 结构。相比 H100,每个处理块新增 **64KB Tensor Memory(TMEM)**,Tensor Core 升级到第五代(支持 NVFP4)。来源:同上 NVIDIA 官方博客。
-
----
-
-## 总结导图
-
-```
-CUDA 生态
-├── 底层基础     Driver API → PTX/SASS → NVVM IR
-├── 编译工具     nvcc / NVRTC / ptxas / Nsight / Sanitizer
-├── 内存管理     Streams/Events/Graphs/VMM/GPUDirect
-├── 数学库       cuBLAS(Lt) / cuDNN / cuFFT / cuSPARSE / cuSolver / cuTENSOR
-├── 模板库       Thrust / CUB / CUTLASS / CuTe
-├── AI 推理      TensorRT / TensorRT-LLM / TransformerEngine / Triton Server
-├── 多 GPU 通信  NCCL / NVSHMEM / NVLink / GPUDirect RDMA
-├── 科学计算     AmgX / cuQuantum / cuDSS / NVPL
-├── 视觉媒体     NPP / nvJPEG / NVENC/NVDEC / VPI / OptiX
-├── 语言绑定     PyCUDA / Numba / CuPy / Triton DSL
-├── 数据科学     RAPIDS (cuDF/cuML/cuGraph/RAFT)
-└── 部署         NGC / Container Toolkit / Triton Server
-```
-
-这个生态的核心设计哲学是**分层**:底层硬件特性通过 Driver/Runtime 暴露,数学库在其上提供高性能原语,框架再在数学库之上构建算子,最终用户通过 PyTorch/JAX 等高层 API 使用。每层都可以单独"打穿"——需要极致性能时可从 PyTorch 一路下探到 CUTLASS 甚至手写 SASS。
