@@ -10,6 +10,10 @@ excerpt: "系统梳理 NVIDIA CUDA 生态的每一层:底层 Driver/Runtime API�
 
 NVIDIA 的 CUDA 生态是当前 AI 训练与推理的事实基准,几乎所有国产 AI 芯片都以"兼容 CUDA 语义"为对齐目标。这篇文章把整个生态按层级拆开,逐个模块讲清楚职责、定位与典型用法,帮开发者建立一张完整的知识地图。
 
+先用一张全景图概览整个软件栈的分层结构与自顶向下的调用链,后面各章再逐层展开:
+
+![CUDA 软件栈架构全景:自顶向下 8 层主栈(高层框架/绑定 → AI 推理训练部署 → 中间库 → 执行内存管理 → Runtime API → Driver API → 内核驱动 → GPU 硬件),右侧为编译工具链、调试分析与编程模型三个旁路模块](/assets/chips/cuda-software-stack.png)
+
 ## 一、底层基础层
 
 ### 1. CUDA Driver API
