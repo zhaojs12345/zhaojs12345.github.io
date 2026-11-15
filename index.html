@@ -502,14 +502,15 @@
 
         {% assign sections = "具身智能,芯片生态" | split: "," %}
         {% for sec in sections %}
+        {% assign visible_posts = site.categories[sec] | where_exp: "p", "p.hidden != true" %}
         <section class="cat-section" data-section="{{ sec }}" data-per-page="10">
           <div class="cat-head">
             <span class="cat-bar"></span>
             <h2>{{ sec }}</h2>
-            <span class="cat-count">{{ site.categories[sec] | size }} 篇</span>
+            <span class="cat-count">{{ visible_posts | size }} 篇</span>
           </div>
           <div class="posts">
-            {% for post in site.categories[sec] %}
+            {% for post in visible_posts %}
             <a class="card post-item"
                href="{{ post.url | relative_url }}"
                data-title="{{ post.title | downcase }}"

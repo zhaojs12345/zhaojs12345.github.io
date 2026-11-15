@@ -1,5 +1,6 @@
 ---
 layout: post
+hidden: true
 title: "摩尔线程 MUSA 完整生态详解:高度对标 CUDA 的国产 GPU 软件栈"
 date: 2026-11-12 12:00:00 +0800
 excerpt: "逐模块梳理摩尔线程 MUSA 的软件生态:MUSArt 运行时、MUSA C 编程模型、mcc 编译器与 musify 迁移工具、muBLAS/muDNN 数学库、MCCL 通信,以及 torch_musa 的框架适配,并给出与 CUDA 的逐项对应。"

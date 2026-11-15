@@ -1,5 +1,6 @@
 ---
 layout: post
+hidden: true
 title: "华为昇腾 CANN 完整生态详解:从达芬奇架构到 MindSpore/MindIE 全栈"
 date: 2026-11-12 11:20:00 +0800
 excerpt: "逐模块梳理华为昇腾 Ascend NPU 的软件生态:达芬奇架构 AI Core、CANN 运行时、Ascend C 算子语言、ATC/AOE 工具链、HCCL 通信、MindIE 推理引擎,以及 MindSpore 与 torch_npu 的框架适配,并给出与 CUDA 的对应关系。"

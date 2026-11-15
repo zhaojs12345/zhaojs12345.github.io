@@ -1,5 +1,6 @@
 ---
 layout: post
+hidden: true
 title: "天数智芯 IXUCA 完整生态详解:天垓 GPU 的 Corex 软件栈全景"
 date: 2026-11-12 12:20:00 +0800
 excerpt: "逐模块梳理天数智芯 IXUCA/Corex 的软件生态:底层运行时与 CUDA 兼容机制、编译工具链、ixBLAS/ixDNN 数学库、ICCL 通信,以及 torch_corex 的框架适配与 Deep-Spark 开源平台,并给出与 CUDA 的对应关系。"

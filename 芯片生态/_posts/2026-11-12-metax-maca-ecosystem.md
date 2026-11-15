@@ -1,5 +1,6 @@
 ---
 layout: post
+hidden: true
 title: "沐曦 MACA 完整生态详解:高 CUDA 兼容的曦云 GPU 软件栈"
 date: 2026-11-12 12:10:00 +0800
 excerpt: "逐模块梳理沐曦 MACA 的软件生态:运行时与 CUDA 兼容机制、cu-bridge/hipMACA 编译路径、mcBLAS/mcDNN 数学库、MCCL 通信,以及 torch_maca 与 vLLM 的框架适配,并给出与 CUDA 的对应关系。"

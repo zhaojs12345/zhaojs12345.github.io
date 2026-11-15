@@ -7,6 +7,20 @@ excerpt: "覆盖英伟达 CUDA 生态与海光、华为昇腾、寒武纪、昆�
 
 本文梳理英伟达及主要国产 AI 芯片的完整软件生态——包括底层运行时/编译器、主流训练推理框架的适配分支、关键依赖版本，以及各家官方开发者社区入口。版本号随厂商节奏持续迭代，以官方 release notes 为准，本文仅作参考基线。
 
+## 分支深度解读导航
+
+本文为总览，每款芯片的逐模块详解见下列分支长文：
+
+- [CUDA 完整生态详解:从底层驱动到上层框架的全景梳理]({% post_url 2026-11-12-cuda-ecosystem-deep-dive %})
+- [海光 DCU 完整生态详解:ROCm 兼容路线下的 DTK 软件栈全景]({% post_url 2026-11-12-hygon-dcu-ecosystem %})
+- [华为昇腾 CANN 完整生态详解:从达芬奇架构到 MindSpore/MindIE 全栈]({% post_url 2026-11-12-ascend-cann-ecosystem %})
+- [寒武纪 MLU 完整生态详解:BANG C 与 Neuware 软件栈全景]({% post_url 2026-11-12-cambricon-mlu-ecosystem %})
+- [昆仑芯 XPU 完整生态详解:XRE/XDK 软件栈与 PaddlePaddle 协同全景]({% post_url 2026-11-12-kunlunxin-xpu-ecosystem %})
+- [燧原 DCU(邃思/云燧)完整生态详解:TopsRider 软件栈全景]({% post_url 2026-11-12-enflame-gcu-ecosystem %})
+- [摩尔线程 MUSA 完整生态详解:高度对标 CUDA 的国产 GPU 软件栈]({% post_url 2026-11-12-mthreads-musa-ecosystem %})
+- [沐曦 MACA 完整生态详解:高 CUDA 兼容的曦云 GPU 软件栈]({% post_url 2026-11-12-metax-maca-ecosystem %})
+- [天数智芯 IXUCA 完整生态详解:天垓 GPU 的 Corex 软件栈全景]({% post_url 2026-11-12-iluvatar-ixuca-ecosystem %})
+
 ---
 
 ## 一、NVIDIA CUDA 生态(基准参照)
@@ -192,11 +206,11 @@ Neuware 3.5 → torch_mlu 1.17 → PyTorch 1.13
 
 ---
 
-## 六、燧原科技 GCU（太初系列）
+## 六、燧原科技 DCU（邃思 / 云燧系列）
 
-燧原的芯片品牌为**太初**（Teco），GCU（Graph Compute Unit）定位训练推理一体，TopsRider 是完整的软件栈名称。
+燧原科技（Enflame）的芯片基于**邃思（SuiSi）架构的 DTU（Deep Thinking Unit，深度思考单元）**，加速卡品牌为**云燧（CloudBlazer）**（训练 T 系列、推理 i 系列），定位训练推理一体，TopsRider 是完整的软件栈名称。
 
-> 📖 分支深度解读:[燧原 GCU（太初）完整生态详解]({% post_url 2026-11-12-enflame-gcu-ecosystem %})
+> 📖 分支深度解读:[燧原 DCU（邃思/云燧）完整生态详解]({% post_url 2026-11-12-enflame-gcu-ecosystem %})
 
 ### 核心 SDK
 
@@ -339,7 +353,7 @@ MUSA SDK 2.1 → torch_musa 2.0 → PyTorch 2.0
 | 华为昇腾 | CANN | torch_npu | HCCL | vllm-ascend | Ascend C |
 | 寒武纪 | Neuware | torch_mlu | CNCL | MLU 分支 | BANG C |
 | 昆仑芯 | XRE / XDK | torch_xpu | XCCL | 实验性 | — |
-| 燧原/太初 | TopsRider | torch_gcu | TCCL | GCU 分支 | TopsCC |
+| 燧原（邃思/云燧） | TopsRider | torch_gcu | TCCL | DTU 分支 | TopsCC |
 | 摩尔线程 | MUSA SDK | torch_musa | MCCL | MUSA 分支 | MUSA C |
 | 沐曦 | MACA SDK | torch_maca | MCCL | MACA 适配 | HIP/MACA |
 | 天数智芯 | IXUCA SDK | torch_corex | ICCL | 适配进行中 | — |

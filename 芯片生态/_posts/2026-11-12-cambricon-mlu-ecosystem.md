@@ -1,5 +1,6 @@
 ---
 layout: post
+hidden: true
 title: "寒武纪 MLU 完整生态详解:BANG C 与 Neuware 软件栈全景"
 date: 2026-11-12 11:30:00 +0800
 excerpt: "逐模块梳理寒武纪 MLU 思元系列的软件生态:CNRT/CNDrv 运行时、BANG C 算子语言、CNNL 算子库、CNCL 通信、MagicMind 推理引擎,以及 torch_mlu(Catch)的框架适配,并给出与 CUDA 的对应关系。"

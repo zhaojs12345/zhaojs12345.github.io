@@ -1,5 +1,6 @@
 ---
 layout: post
+hidden: true
 title: "海光 DCU 完整生态详解:ROCm 兼容路线下的 DTK 软件栈全景"
 date: 2026-11-12 11:10:00 +0800
 excerpt: "逐模块梳理海光 DCU 的软件生态:底层 ROCm 兼容运行时、HIP 编程模型、DTK 工具链、hipBLAS/hipDNN 数学库、HCCL 通信,以及 torch-dcu 与 vLLM/DeepSpeed 的框架适配,并给出与 CUDA 的对应关系。"

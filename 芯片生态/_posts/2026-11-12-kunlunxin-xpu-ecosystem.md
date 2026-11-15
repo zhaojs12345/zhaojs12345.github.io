@@ -1,5 +1,6 @@
 ---
 layout: post
+hidden: true
 title: "昆仑芯 XPU 完整生态详解:XRE/XDK 软件栈与 PaddlePaddle 协同全景"
 date: 2026-11-12 11:40:00 +0800
 excerpt: "逐模块梳理昆仑芯 XPU 的软件生态:XRE 运行时、XPU Kernel 编程模型、XDK/XTDK 工具链、XCCL 通信,以及 PaddlePaddle-XPU 与 torch_xpu 的框架适配,并给出与 CUDA 的对应关系。"
