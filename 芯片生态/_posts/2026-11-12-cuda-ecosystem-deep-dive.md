@@ -74,10 +74,50 @@ CUDA 生态
 
 ### 1. CUDA Driver API
 最底层的接口,直接与 GPU 驱动交互。
-- 显式管理 GPU context(`cuCtxCreate`)
-- 加载 `.cubin`/PTX 模块(`cuModuleLoad`)
-- 控制粒度最细,适合写底层运行时或推理引擎
-- 对应头文件:`cuda.h`,链接库:`libcuda.so`
+- 通过nvidia-smi系列指令可以获取到芯片的基本信息，如内存，功率，温度等等
+- PCIe 实时吞吐:TX/RX 带宽(nvidia-smi dmon)
+- NVLink / NVSwitch （nvidia-smi nvlink -s）;H800 8 卡机经 NVSwitch 全互联,由 Fabric Manager 管理
+- MIG(Multi-Instance GPU)把一张卡硬件分区成多个隔离实例(SM/L2/显存/带宽物理隔离)；nvidia-smi mig -lgip
+- ECC（Error-Correcting Code）：纠错码。显存(以及片上 SRAM)在高温、高负载等因素下,偶尔会有某个 bit 莫名翻转(0→1 或 1→0),叫"软错误/位翻转"，分为两类：    
+          0、用法nvidia-smi -q -d ECC(看可纠正/不可纠正错误计数);nvidia-smi --query-gpu=ecc.errors.uncorrected.aggregate.total --format=csv      
+          1、Correctable(可纠正):自动修好了,任务照跑,但计数一直涨说明这张卡显存开始不稳,要留意。     
+          2、Uncorrectable(不可纠正):纠不了,通常直接让任务崩/报错,甚至 Xid error。（可能是硬件问题）
+- 虚拟化：核心目的:让一张(或多张)物理 GPU 被多个虚拟机/多个租户/多个任务共享或隔离使用。NVIDIA 有四条路线,从"整卡给一个"到"一卡切多份",按隔离强弱和场景:    
+1. Passthrough(直通)—— 最简单
+
+整张物理 GPU 通过 VFIO 直接"穿透"给一个 VM,VM 里装正常驱动,就像物理机独占。
+- 场景:一个 VM 要整卡算力,不共享。
+- 不要 License,配置简单。
+
+2. vGPU(软件切分)—— 需要 License
+
+在 hypervisor(KVM/ESXi 等)装 vGPU 宿主驱动,把一张卡按 profile(如 A100-10C,数字是显存 GB)时间片轮转分给多个 VM。
+- 场景:云桌面(VDI)、多租户共享一张卡做轻量推理。
+- 要付费 License,VM 里的 guest 驱动要连 License Server。
+
+3. SR-IOV(硬件级直通切分)
+
+PCIe 硬件特性,把一张物理卡(PF)在硬件上拆成多个 VF(虚拟功能),每个 VF 直通给一个 VM。是 vGPU 和 MIG-backed vGPU 的底层硬件基础(Ampere 及以后数据中心卡)。
+
+4. MIG-backed vGPU
+
+MIG 硬件分区 + vGPU 虚拟化结合,每个 vGPU 绑一个 MIG 实例 → 既虚拟化又硬件隔离。
+
+- MIG：MIG = Multi-Instance GPU,多实例 GPU。把一张物理卡在硬件上切成多个互相隔离的"小 GPU",每个实例有自己独享的 SM(计算单元)、L2 缓存、显存、显存带宽——物理隔离,互不干扰。
+
+和"用 CUDA_VISIBLE_DEVICES 让多个进程共用一张卡"的本质区别:
+- 共用一张卡:进程互相抢 SM 和带宽,一个跑飞会拖慢别的,性能不确定。
+- MIG:每个实例是硬切分的,A 实例的任务完全影响不到 B 实例,性能确定、故障隔离。
+
+H800(Hopper)支持 MIG,一张卡最多切 7 份。profile 用 "计算单元数 g + 显存 GB" 表示,比如:
+- 1g.10gb(1/7 算力 + 10GB)
+- 2g.20gb、3g.40gb、7g.80gb(整卡)
+
+常用命令:
+nvidia-smi -mig 1                 # 开启 MIG 模式(需重置 GPU)
+nvidia-smi mig -lgip              # 列出可用的 GPU 实例 profile
+nvidia-smi mig -cgi 1g.10gb -C    # 创建一个 1g.10gb 实例
+nvidia-smi                        # MIG 开启后,每个实例显示成独立"设备"
 
 ### 2. CUDA Runtime API
 对 Driver API 的高级封装,是大多数开发者的入口。
