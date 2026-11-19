@@ -92,18 +92,21 @@
     {% assign lbl  = labels[i] %}
     {% assign desc = descs[i] %}
     {% assign cnt  = site.categories[sec] | size %}
-    <div class="topic reveal" style="text-decoration:none;cursor:default;">
+    <div class="topic reveal" style="cursor:default;">
+      <div class="topic-icon">
+        {% if sec == "具身智能" %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="8" width="12" height="10" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="9.5" cy="13" r="1"/><circle cx="14.5" cy="13" r="1"/><path d="M3 13h3M18 13h3"/></svg>
+        {% else %}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1"/><path d="M9 4v3M12 4v3M15 4v3M9 17v3M12 17v3M15 17v3M4 9h3M4 12h3M4 15h3M17 9h3M17 12h3M17 15h3"/></svg>
+        {% endif %}
+      </div>
       <span class="en">{{ lbl }}</span>
       <h3>{{ sec }}</h3>
       <p>{{ desc }}</p>
-      <span class="count">
-        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"
-             stroke="currentColor" stroke-width="1.6">
-          <path d="M2 12.5V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v8.5"/>
-          <line x1="2" y1="12.5" x2="14" y2="12.5"/>
-        </svg>
-        {{ cnt }} 篇
-      </span>
+      <div class="topic-arrow">
+        <span>{{ cnt }} 篇文章</span>
+        <span>↗</span>
+      </div>
     </div>
     {% endfor %}
   </div>
@@ -145,18 +148,18 @@
          data-section="{{ sec }}"
          data-title="{{ post.title | downcase }}"
          data-excerpt="{{ post.excerpt | strip_html | downcase }}">
-        <span class="entry-date">
-          {{ post.date | date: "%Y-%m-%d" }}
-        </span>
-        <span>
+        <div class="entry-top">
           <h4 class="entry-title">{{ post.title }}</h4>
-          {% if post.excerpt %}
-          <p class="entry-excerpt">{{ post.excerpt | strip_html }}</p>
-          {% endif %}
-          <span class="entry-foot">
-            <span>{{ sec }}</span>
-          </span>
-        </span>
+          <span class="entry-arrow">↗</span>
+        </div>
+        {% if post.excerpt %}
+        <p class="entry-excerpt">{{ post.excerpt | strip_html }}</p>
+        {% endif %}
+        <div class="entry-foot">
+          <span class="entry-date">{{ post.date | date: "%Y-%m-%d" }}</span>
+          <span class="entry-dot"></span>
+          <span class="entry-tag">{{ sec }}</span>
+        </div>
       </a>
       {% else %}
       <div class="empty">暂无文章,敬请期待。</div>
