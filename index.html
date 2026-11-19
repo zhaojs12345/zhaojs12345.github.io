@@ -9,49 +9,32 @@
 <meta name="description" content="{{ site.description }}">
 <link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
 <script>
-  (function(){
-    var t=localStorage.getItem('theme');
-    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
-    else if(t==='light')document.documentElement.setAttribute('data-theme','light');
-  })();
+(function(){
+  var t=localStorage.getItem('theme');
+  if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+  else if(t==='light')document.documentElement.setAttribute('data-theme','light');
+})();
 </script>
 </head>
-<body class="js">
-<!-- ===== Navigation ===== -->
-<header style="position:sticky;top:0;z-index:50;background:var(--header-bg);
-  -webkit-backdrop-filter:saturate(180%) blur(12px);
-  backdrop-filter:saturate(180%) blur(12px);
-  border-bottom:1px solid var(--line);">
-  <div class="wrapper" style="display:flex;align-items:center;
-    justify-content:space-between;gap:16px;height:64px;">
-    <a href="{{ '/' | relative_url }}"
-       style="display:inline-flex;align-items:center;gap:10px;
-         font-family:var(--font-serif);font-size:19px;font-weight:600;
-         color:var(--text);text-decoration:none;letter-spacing:0.2px;">
-      <span style="width:8px;height:8px;border-radius:50%;
-        background:var(--accent);flex:none;"></span>
-      {{ site.title }}
-    </a>
-    <nav style="display:flex;align-items:center;gap:4px;">
-      <a href="#posts" class="nav-link">文章</a>
-      <a href="#about" class="nav-link">关于</a>
-      <a href="https://github.com/zhaojs12345" target="_blank"
-         rel="noopener" class="nav-link">GitHub</a>
-      <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
-        <svg class="icon-sun" viewBox="0 0 20 20" fill="none"
-             stroke="currentColor" stroke-width="1.6">
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="header-inner">
+    <a class="site-name" href="{{ '/' | relative_url }}">{{ site.title }}</a>
+    <nav class="header-nav">
+      <a class="nav-a" href="#writing">文章</a>
+      <a class="nav-a" href="#about">关于</a>
+      <a class="nav-a" href="https://github.com/zhaojs12345" target="_blank" rel="noopener">GitHub</a>
+      <button class="tog" id="tog" aria-label="切换主题">
+        <svg class="sun" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
           <circle cx="10" cy="10" r="4"/>
-          <line x1="10" y1="2" x2="10" y2="4"/>
-          <line x1="10" y1="16" x2="10" y2="18"/>
-          <line x1="2" y1="10" x2="4" y2="10"/>
-          <line x1="16" y1="10" x2="18" y2="10"/>
-          <line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/>
-          <line x1="14.4" y1="14.4" x2="15.8" y2="15.8"/>
-          <line x1="4.2" y1="15.8" x2="5.6" y2="14.4"/>
-          <line x1="14.4" y1="5.6" x2="15.8" y2="4.2"/>
+          <line x1="10" y1="2" x2="10" y2="4"/><line x1="10" y1="16" x2="10" y2="18"/>
+          <line x1="2" y1="10" x2="4" y2="10"/><line x1="16" y1="10" x2="18" y2="10"/>
+          <line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/><line x1="14.4" y1="14.4" x2="15.8" y2="15.8"/>
+          <line x1="4.2" y1="15.8" x2="5.6" y2="14.4"/><line x1="14.4" y1="5.6" x2="15.8" y2="4.2"/>
         </svg>
-        <svg class="icon-moon" viewBox="0 0 20 20" fill="none"
-             stroke="currentColor" stroke-width="1.6">
+        <svg class="moon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
           <path d="M17.5 12A7.5 7.5 0 0 1 8 2.5a7.5 7.5 0 1 0 9.5 9.5z"/>
         </svg>
       </button>
@@ -59,275 +42,182 @@
   </div>
 </header>
 
-<!-- ===== Hero ===== -->
-<div class="wrapper">
-  <section class="hero reveal">
-    <p class="kicker">Personal Knowledge Base</p>
-    <h1>{{ site.title }}</h1>
-    <p class="lede">
-      {{ site.description }} ——
-      在<strong style="color:var(--text)">具身智能</strong>与<strong style="color:var(--text)">AI 芯片生态</strong>两条主线上,沉淀学习与思考的痕迹。
-    </p>
-    <div class="hero-meta">
-      {% assign total = 0 %}
-      {% for cat in site.categories %}{% assign total = total | plus: cat[1].size %}{% endfor %}
-      <div>
-        <span class="num">{{ total }}</span>
-        <span class="lbl">篇文章</span>
-      </div>
-      <div>
-        <span class="num">{{ site.categories | size }}</span>
-        <span class="lbl">个专题</span>
-      </div>
-    </div>
-  </section>
+<!-- ── Main ── -->
+<main>
+  <div class="wrap">
 
-  <!-- ===== Topic overview cards ===== -->
-  <div class="topics">
-    {% assign sections = "具身智能,芯片生态" | split: "," %}
-    {% assign labels = "Embodied AI,Chip Ecosystem" | split: "," %}
-    {% assign descs  = "机器人、感知、控制与策略学习的交叉地带——从数理基础到前沿方法的系统梳理,具身平台,感知融合,强化学习。|覆盖 CUDA 生态与昇腾、寒武纪、昆仑芯、燧原、摩尔线程、海光等国产 AI 芯片的 SDK、框架适配与开发者社区指南。" | split: "|" %}
-    {% for i in (0..1) %}
-    {% assign sec  = sections[i] %}
-    {% assign lbl  = labels[i] %}
-    {% assign desc = descs[i] %}
-    {% assign cnt  = site.categories[sec] | size %}
-    <div class="topic reveal" style="cursor:default;">
-      <div class="topic-icon">
-        {% if sec == "具身智能" %}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="8" width="12" height="10" rx="2"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><circle cx="9.5" cy="13" r="1"/><circle cx="14.5" cy="13" r="1"/><path d="M3 13h3M18 13h3"/></svg>
-        {% else %}
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="7" width="10" height="10" rx="1"/><path d="M9 4v3M12 4v3M15 4v3M9 17v3M12 17v3M15 17v3M4 9h3M4 12h3M4 15h3M17 9h3M17 12h3M17 15h3"/></svg>
-        {% endif %}
-      </div>
-      <span class="en">{{ lbl }}</span>
-      <h3>{{ sec }}</h3>
-      <p>{{ desc }}</p>
-      <div class="topic-arrow">
-        <span>{{ cnt }} 篇文章</span>
-        <span>↗</span>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-
-  <!-- ===== Feed ===== -->
-  <div class="feed" id="posts">
-    <div class="feed-head reveal">
-      <h2>全部文章</h2>
-    </div>
-
-    <div class="toolbar reveal">
-      <div class="filters" id="filters">
-        <button class="chip is-active" data-filter="all">全部</button>
-        {% for sec in sections %}
-        <button class="chip" data-filter="{{ sec }}">{{ sec }}</button>
-        {% endfor %}
-      </div>
-      <label class="search" for="search">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
-          <circle cx="8.5" cy="8.5" r="5.5"/>
-          <line x1="13" y1="13" x2="17" y2="17"/>
-        </svg>
-        <input type="text" id="search"
-               placeholder="搜索标题或摘要…" autocomplete="off">
-      </label>
-    </div>
-
-    {% for sec in sections %}
-    {% assign visible_posts = site.categories[sec] | where_exp: "p", "p.hidden != true" %}
-    <section class="section cat-section reveal"
-             data-section="{{ sec }}" data-per-page="10">
-      <div class="section-head">
-        <h3>{{ sec }}</h3>
-        <span class="cat-count">{{ visible_posts | size }} 篇</span>
-      </div>
-      {% for post in visible_posts %}
-      <a class="entry post-item"
-         href="{{ post.url | relative_url }}"
-         data-section="{{ sec }}"
-         data-title="{{ post.title | downcase }}"
-         data-excerpt="{{ post.excerpt | strip_html | downcase }}">
-        <div class="entry-top">
-          <h4 class="entry-title">{{ post.title }}</h4>
-          <span class="entry-arrow">↗</span>
-        </div>
-        {% if post.excerpt %}
-        <p class="entry-excerpt">{{ post.excerpt | strip_html }}</p>
-        {% endif %}
-        <div class="entry-foot">
-          <span class="entry-date">{{ post.date | date: "%Y-%m-%d" }}</span>
-          <span class="entry-dot"></span>
-          <span class="entry-tag">{{ sec }}</span>
-        </div>
-      </a>
-      {% else %}
-      <div class="empty">暂无文章,敬请期待。</div>
-      {% endfor %}
-      <nav class="pager" aria-label="{{ sec }}分页"></nav>
+    <!-- Bio -->
+    <section class="bio">
+      <h1>{{ site.author.name }}</h1>
+      <p>
+        记录学习与思考的痕迹。两条主线：
+        <strong>具身智能</strong>——机器人、感知、控制与策略学习；
+        <strong>AI 芯片生态</strong>——CUDA 与国产芯片的 SDK、框架适配。
+      </p>
     </section>
-    {% endfor %}
 
-    <div class="no-result" id="noResult">没有匹配的文章,换个关键词试试。</div>
-  </div>
+    <!-- Writing -->
+    <section id="writing">
 
-  <!-- ===== About + Links ===== -->
-  <div class="about" id="about">
-    <div class="panel reveal">
-      <h2>关于</h2>
-      <p>你好,我是 <strong>{{ site.author.name }}</strong>。<br><br>
-      这里沉淀两条主线的笔记:<strong>具身智能</strong>(机器人、感知、控制与学习),
-      以及 <strong>AI 芯片生态</strong>(CUDA 与国产芯片的 SDK、框架适配)。<br><br>
-      一切记录都在持续更新中。</p>
+      <!-- Toolbar -->
+      <div class="toolbar">
+        {% assign sections = "具身智能,芯片生态" | split: "," %}
+        <div class="chips" id="chips">
+          <button class="chip on" data-f="all">全部</button>
+          {% for sec in sections %}
+          <button class="chip" data-f="{{ sec }}">{{ sec }}</button>
+          {% endfor %}
+        </div>
+        <label class="search-wrap" for="search">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+            <circle cx="8.5" cy="8.5" r="5.5"/>
+            <line x1="13" y1="13" x2="17" y2="17"/>
+          </svg>
+          <input id="search" type="text" placeholder="搜索…" autocomplete="off">
+        </label>
+      </div>
+
+      <!-- Per-category lists -->
+      {% for sec in sections %}
+      {% assign visible = site.categories[sec] | where_exp: "p", "p.hidden != true" %}
+      <div class="cat-section" data-sec="{{ sec }}" data-pp="10">
+        <div class="cat-label">{{ sec }}<span style="margin-left:auto;">{{ visible | size }} 篇</span></div>
+        {% for post in visible %}
+        <a class="row post-item"
+           href="{{ post.url | relative_url }}"
+           data-sec="{{ sec }}"
+           data-t="{{ post.title | downcase }}"
+           data-e="{{ post.excerpt | strip_html | downcase }}">
+          <span class="row-date">{{ post.date | date: "%m-%d" }}</span>
+          <span class="row-title">{{ post.title }}</span>
+        </a>
+        {% else %}
+        <div class="empty">暂无文章</div>
+        {% endfor %}
+        <nav class="pager" aria-label="{{ sec }}"></nav>
+      </div>
+      {% endfor %}
+
+      <div class="no-result" id="noResult">没有匹配的文章。</div>
+    </section>
+
+    <!-- About + Links -->
+    <div class="about-row" id="about">
+      <div class="about-block">
+        <h2>关于</h2>
+        <p>
+          我是 <strong>{{ site.author.name }}</strong>，
+          在 <strong>具身智能</strong>（机器人、感知、控制与学习）
+          和 <strong>AI 芯片生态</strong>（CUDA 与国产芯片 SDK、框架适配）两个方向持续学习，
+          这里是笔记的沉淀。
+        </p>
+      </div>
+      <div class="links-block">
+        <h2>友情链接</h2>
+        <a class="ext-link" href="https://llyyyyl.github.io/" target="_blank" rel="noopener">
+          llyyyyl <span>↗</span>
+        </a>
+      </div>
     </div>
-    <div class="panel reveal">
-      <h2>友情链接</h2>
-      <a class="link-item" href="https://llyyyyl.github.io/"
-         target="_blank" rel="noopener">
-        llyyyyl <span class="arrow">↗</span>
-      </a>
-    </div>
-  </div>
 
-</div><!-- /.wrapper -->
+  </div><!-- /.wrap -->
+</main>
 
-<!-- ===== Footer ===== -->
-<footer style="margin-top:84px;padding:34px 0;border-top:1px solid var(--line);">
-  <div class="wrapper">
-    <div style="display:flex;align-items:center;justify-content:space-between;
-      flex-wrap:wrap;gap:14px;font-size:13.5px;color:var(--muted);">
-      <span>© {{ site.time | date: "%Y" }} {{ site.author.name }}</span>
-      <span>
-        <a href="https://github.com/zhaojs12345" target="_blank" rel="noopener"
-           style="color:var(--muted);text-decoration:none;">GitHub</a>
-      </span>
-    </div>
+<!-- ── Footer ── -->
+<footer>
+  <div class="foot-inner">
+    <span>© {{ site.time | date: "%Y" }} {{ site.author.name }}</span>
+    <a href="https://github.com/zhaojs12345" target="_blank" rel="noopener">GitHub</a>
   </div>
 </footer>
 
-<style>
-  .nav-link {
-    padding: 8px 12px;
-    border-radius: 8px;
-    font-size: 14.5px;
-    color: var(--text-soft);
-    text-decoration: none;
-    transition: background 0.18s, color 0.18s;
-  }
-  .nav-link:hover { background: var(--bg-sunk); color: var(--text); }
-</style>
-
 <script>
-(function () {
-  /* ---- Theme toggle ---- */
+(function(){
+  /* theme */
+  var tog  = document.getElementById('tog');
   var root = document.documentElement;
-  var btn  = document.getElementById('themeToggle');
-  btn.addEventListener('click', function () {
-    var isDark = root.getAttribute('data-theme') === 'dark' ||
-      (!root.getAttribute('data-theme') &&
-       window.matchMedia('(prefers-color-scheme: dark)').matches);
-    var next = isDark ? 'light' : 'dark';
+  tog.addEventListener('click', function(){
+    var dark = root.getAttribute('data-theme')==='dark' ||
+      (!root.getAttribute('data-theme') && matchMedia('(prefers-color-scheme:dark)').matches);
+    var next = dark ? 'light' : 'dark';
     root.setAttribute('data-theme', next);
     localStorage.setItem('theme', next);
   });
 
-  /* ---- Filter chips ---- */
-  var chips = document.querySelectorAll('.chip');
-  var allSecs = document.querySelectorAll('.cat-section');
-  chips.forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      chips.forEach(function (c) { c.classList.remove('is-active'); });
-      chip.classList.add('is-active');
-      var f = chip.getAttribute('data-filter');
-      allSecs.forEach(function (sec) {
-        sec.style.display = (f === 'all' || sec.getAttribute('data-section') === f)
-          ? '' : 'none';
+  /* filter chips */
+  var chips   = document.querySelectorAll('.chip');
+  var catSecs = document.querySelectorAll('.cat-section');
+  chips.forEach(function(c){
+    c.addEventListener('click', function(){
+      chips.forEach(function(x){ x.classList.remove('on'); });
+      c.classList.add('on');
+      var f = c.getAttribute('data-f');
+      catSecs.forEach(function(s){
+        s.style.display = (f==='all' || s.getAttribute('data-sec')===f) ? '' : 'none';
       });
     });
   });
 
-  /* ---- Search + Pagination ---- */
-  var search   = document.getElementById('search');
-  var allPosts = Array.prototype.slice.call(document.querySelectorAll('.post-item'));
+  /* search + pagination */
+  var input    = document.getElementById('search');
+  var allPosts = Array.from(document.querySelectorAll('.post-item'));
   var noResult = document.getElementById('noResult');
 
-  var sections = Array.prototype.slice.call(allSecs).map(function (el) {
+  var secs = Array.from(catSecs).map(function(el){
     return {
-      el:      el,
-      perPage: parseInt(el.getAttribute('data-per-page'), 10) || 10,
-      pager:   el.querySelector('.pager'),
-      posts:   Array.prototype.slice.call(el.querySelectorAll('.post-item')),
-      page:    1
+      el: el, page: 1,
+      pp:    parseInt(el.getAttribute('data-pp'),10)||10,
+      pager: el.querySelector('.pager'),
+      posts: Array.from(el.querySelectorAll('.post-item'))
     };
   });
 
-  function matches(p, q) {
-    if (!q) return true;
-    var text = (p.getAttribute('data-title')   || '') + ' ' +
-               (p.getAttribute('data-excerpt') || '');
-    return text.indexOf(q) !== -1;
+  function hit(p, q){
+    if(!q) return true;
+    return ((p.getAttribute('data-t')||'')+' '+(p.getAttribute('data-e')||'')).includes(q);
   }
 
-  function renderPager(sec, totalPages) {
+  function mkPager(sec, total){
     sec.pager.innerHTML = '';
-    if (totalPages <= 1) return;
-    function mkBtn(label, page, opts) {
-      opts = opts || {};
-      var b = document.createElement('button');
-      b.textContent = label;
-      if (opts.active)   b.className = 'active';
-      if (opts.disabled) b.disabled  = true;
-      else b.addEventListener('click', function () {
-        sec.page = page;
-        apply();
-        sec.el.querySelector('.section-head')
-          .scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
+    if(total<=1) return;
+    function btn(lbl, pg, opts){
+      opts=opts||{};
+      var b=document.createElement('button');
+      b.textContent=lbl;
+      if(opts.on) b.className='on';
+      if(opts.off) b.disabled=true;
+      else b.onclick=function(){ sec.page=pg; apply();
+        sec.el.querySelector('.cat-label').scrollIntoView({behavior:'smooth',block:'start'}); };
       sec.pager.appendChild(b);
     }
-    mkBtn('‹', sec.page - 1, { disabled: sec.page === 1 });
-    for (var i = 1; i <= totalPages; i++) mkBtn(String(i), i, { active: i === sec.page });
-    mkBtn('›', sec.page + 1, { disabled: sec.page === totalPages });
+    btn('‹', sec.page-1, {off: sec.page===1});
+    for(var i=1;i<=total;i++) btn(String(i), i, {on: i===sec.page});
+    btn('›', sec.page+1, {off: sec.page===total});
   }
 
-  function apply() {
-    var q = (search.value || '').trim().toLowerCase();
-    var total = 0;
-    sections.forEach(function (sec) {
-      var matched    = sec.posts.filter(function (p) { return matches(p, q); });
-      var totalPages = Math.max(1, Math.ceil(matched.length / sec.perPage));
-      if (sec.page > totalPages) sec.page = totalPages;
-      var start = (sec.page - 1) * sec.perPage;
-      var end   = start + sec.perPage;
-      sec.posts.forEach(function (p) { p.style.display = 'none'; });
-      matched.slice(start, end).forEach(function (p) { p.style.display = ''; });
-      sec.el.style.display = (q && matched.length === 0) ? 'none' : '';
-      renderPager(sec, totalPages);
-      total += matched.length;
+  function apply(){
+    var q = (input.value||'').trim().toLowerCase();
+    var shown = 0;
+    secs.forEach(function(sec){
+      var matched = sec.posts.filter(function(p){ return hit(p,q); });
+      var pages   = Math.max(1, Math.ceil(matched.length/sec.pp));
+      if(sec.page>pages) sec.page=pages;
+      var s=(sec.page-1)*sec.pp, e=s+sec.pp;
+      sec.posts.forEach(function(p){ p.style.display='none'; });
+      matched.slice(s,e).forEach(function(p){ p.style.display=''; });
+      sec.el.style.display = (q && !matched.length) ? 'none' : '';
+      mkPager(sec, pages);
+      shown += matched.length;
     });
-    noResult.style.display = (allPosts.length && total === 0) ? 'block' : 'none';
+    noResult.style.display = (allPosts.length && !shown) ? 'block' : 'none';
   }
 
-  search.addEventListener('input', function () {
-    sections.forEach(function (s) { s.page = 1; });
+  input.addEventListener('input', function(){
+    secs.forEach(function(s){ s.page=1; });
     apply();
   });
 
   apply();
-
-  /* ---- Scroll-reveal ---- */
-  if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (e) {
-        if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
-      });
-    }, { threshold: 0.07 });
-    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
-  } else {
-    document.querySelectorAll('.reveal').forEach(function (el) {
-      el.classList.add('is-in');
-    });
-  }
 })();
 </script>
 </body>
