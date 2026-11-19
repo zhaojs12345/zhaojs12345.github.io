@@ -7,632 +7,325 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{ site.title }}</title>
 <meta name="description" content="{{ site.description }}">
-<style>
-  :root {
-    --bg: #1a2742;
-    --bg-soft: #22314f;
-    --panel: rgba(46, 64, 100, 0.5);
-    --line: rgba(140, 200, 255, 0.22);
-    --txt: #e8eefb;
-    --txt-dim: #a3b2d0;
-    --accent: #4ef5db;
-    --accent-2: #7ab0ff;
-    --glow: rgba(78, 245, 219, 0.5);
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    font-family: -apple-system, "SF Pro Text", "Segoe UI", "PingFang SC",
-                 "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
-    color: var(--txt);
-    background: var(--bg);
-    line-height: 1.7;
-    -webkit-font-smoothing: antialiased;
-    overflow-x: hidden;
-    position: relative;
-  }
-
-  /* 背景网格 + 传感器光晕 */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--line) 1px, transparent 1px);
-    background-size: 46px 46px;
-    mask-image: radial-gradient(ellipse 90% 50% at 50% 0%, #000 40%, transparent 85%);
-    -webkit-mask-image: radial-gradient(ellipse 90% 50% at 50% 0%, #000 40%, transparent 85%);
-    z-index: -2;
-  }
-
-  body::after {
-    content: "";
-    position: fixed;
-    inset: 0;
-    background:
-      radial-gradient(700px 500px at 15% 5%, rgba(122, 176, 255, 0.26), transparent 62%),
-      radial-gradient(600px 550px at 90% 12%, rgba(78, 245, 219, 0.20), transparent 62%),
-      radial-gradient(900px 650px at 50% 100%, rgba(122, 176, 255, 0.14), transparent 72%);
-    z-index: -1;
-  }
-
-  .wrap {
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 0 28px;
-  }
-
-  /* ---------- Topbar ---------- */
-  .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 30px 0 26px;
-    gap: 18px;
-    flex-wrap: wrap;
-  }
-
-  .brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .brand .dot {
-    width: 9px; height: 9px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 12px var(--glow);
-    animation: pulse 2.4s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.35; transform: scale(0.7); }
-  }
-
-  .brand .name {
-    font-size: 20px;
-    font-weight: 800;
-    letter-spacing: -0.4px;
-    background: linear-gradient(120deg, #ffffff 0%, #9fd4ff 50%, var(--accent) 100%);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .brand .tag {
-    font-family: "SF Mono", "JetBrains Mono", monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
-    opacity: 0.75;
-  }
-
-  /* ---------- Hero banner ---------- */
-  .hero {
-    position: relative;
-    border: 1px solid var(--line);
-    border-radius: 20px;
-    overflow: hidden;
-    margin-bottom: 30px;
-    background: linear-gradient(120deg, rgba(30,44,74,0.7), rgba(18,32,54,0.4));
-    backdrop-filter: blur(10px);
-  }
-
-  .hero svg { display: block; width: 100%; height: auto; }
-
-  .hero .hero-text {
-    position: absolute;
-    left: 34px;
-    bottom: 28px;
-    right: 34px;
-  }
-
-  .hero .hero-text h1 {
-    font-size: clamp(24px, 4vw, 38px);
-    font-weight: 800;
-    letter-spacing: -0.6px;
-    line-height: 1.15;
-    color: #ffffff;
-    text-shadow: 0 2px 20px rgba(0,0,0,0.4);
-  }
-
-  .hero .hero-text p {
-    margin-top: 10px;
-    max-width: 540px;
-    font-size: clamp(13px, 2vw, 15.5px);
-    color: var(--txt);
-    text-shadow: 0 1px 12px rgba(0,0,0,0.5);
-  }
-
-  @media (max-width: 560px) {
-    .hero .hero-text { left: 20px; right: 20px; bottom: 18px; }
-  }
-
-  /* ---------- Layout ---------- */
-  .layout {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 30px;
-    align-items: start;
-    padding-bottom: 60px;
-  }
-
-  /* ---------- Toolbar (search + filter) ---------- */
-  .toolbar { margin-bottom: 22px; }
-
-  .search {
-    width: 100%;
-    padding: 13px 18px;
-    border-radius: 12px;
-    border: 1px solid var(--line);
-    background: var(--panel);
-    color: var(--txt);
-    font-size: 14.5px;
-    outline: none;
-    transition: border-color 0.25s ease, box-shadow 0.25s ease;
-    backdrop-filter: blur(10px);
-  }
-
-  .search::placeholder { color: var(--txt-dim); }
-
-  .search:focus {
-    border-color: rgba(56, 232, 208, 0.45);
-    box-shadow: 0 0 0 3px rgba(56, 232, 208, 0.08);
-  }
-
-  .filters {
-    margin-top: 14px;
-    display: flex;
-    gap: 9px;
-    flex-wrap: wrap;
-  }
-
-  .chip {
-    padding: 6px 15px;
-    border-radius: 100px;
-    border: 1px solid var(--line);
-    background: var(--panel);
-    color: var(--txt-dim);
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.22s ease;
-    backdrop-filter: blur(6px);
-  }
-
-  .chip:hover { color: var(--txt); border-color: rgba(90, 170, 255, 0.35); }
-
-  .chip.active {
-    color: #04131a;
-    background: linear-gradient(120deg, var(--accent), var(--accent-2));
-    border-color: transparent;
-    font-weight: 600;
-  }
-
-  /* ---------- Category sections ---------- */
-  .cat-section { margin-bottom: 36px; }
-  .cat-section:last-of-type { margin-bottom: 0; }
-
-  .cat-head {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-  }
-
-  .cat-head .cat-bar {
-    width: 4px;
-    height: 20px;
-    border-radius: 100px;
-    background: linear-gradient(var(--accent), var(--accent-2));
-    box-shadow: 0 0 10px var(--glow);
-  }
-
-  .cat-head h2 {
-    font-size: 20px;
-    font-weight: 700;
-    letter-spacing: -0.3px;
-    color: #eaf1ff;
-  }
-
-  .cat-head .cat-count {
-    font-family: "SF Mono", "JetBrains Mono", monospace;
-    font-size: 12px;
-    color: var(--txt-dim);
-    padding: 2px 10px;
-    border: 1px solid var(--line);
-    border-radius: 100px;
-  }
-
-  /* ---------- Post list ---------- */
-  .posts { display: grid; gap: 16px; }
-
-  .card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    text-decoration: none;
-    color: inherit;
-    padding: 14px 20px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: var(--panel);
-    backdrop-filter: blur(10px);
-    transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .card::before {
-    content: "";
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: linear-gradient(var(--accent), var(--accent-2));
-    opacity: 0;
-    transition: opacity 0.22s ease;
-  }
-
-  .card:hover {
-    transform: translateX(4px);
-    border-color: rgba(90, 170, 255, 0.35);
-    background: rgba(22, 32, 55, 0.65);
-  }
-
-  .card:hover::before { opacity: 1; }
-
-  .card h3 {
-    font-size: 16px;
-    font-weight: 600;
-    color: #eaf1ff;
-    line-height: 1.5;
-  }
-
-  .card .go {
-    color: var(--txt-dim);
-    font-size: 15px;
-    flex-shrink: 0;
-    transition: color 0.22s ease;
-  }
-  .card:hover .go { color: var(--accent); }
-
-  /* ---------- Pager ---------- */
-  .pager {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin-top: 18px;
-    flex-wrap: wrap;
-  }
-  .pager:empty { display: none; }
-
-  .pager button {
-    min-width: 34px;
-    height: 34px;
-    padding: 0 10px;
-    border-radius: 9px;
-    border: 1px solid var(--line);
-    background: var(--panel);
-    color: var(--txt-dim);
-    font-size: 13.5px;
-    font-family: "SF Mono", "JetBrains Mono", monospace;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(6px);
-  }
-  .pager button:hover:not(:disabled) {
-    color: var(--txt);
-    border-color: rgba(90, 170, 255, 0.35);
-  }
-  .pager button.active {
-    color: #04131a;
-    background: linear-gradient(120deg, var(--accent), var(--accent-2));
-    border-color: transparent;
-    font-weight: 600;
-  }
-  .pager button:disabled {
-    opacity: 0.35;
-    cursor: default;
-  }
-
-  .empty, .no-result {
-    padding: 30px;
-    border: 1px dashed var(--line);
-    border-radius: 16px;
-    color: var(--txt-dim);
-    font-size: 14.5px;
-    text-align: center;
-  }
-  .no-result { display: none; }
-
-  /* ---------- Sidebar ---------- */
-  aside { display: grid; gap: 18px; position: sticky; top: 24px; }
-
-  .side-card {
-    padding: 22px 22px;
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    background: var(--panel);
-    backdrop-filter: blur(10px);
-  }
-
-  .side-card h4 {
-    font-size: 12px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--accent);
-    opacity: 0.85;
-    margin-bottom: 12px;
-  }
-
-  .side-card p { font-size: 13.5px; color: var(--txt-dim); }
-  .side-card strong { color: var(--txt); font-weight: 600; }
-
-  .link-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    text-decoration: none;
-    color: var(--txt);
-    font-size: 14px;
-    padding: 9px 0;
-    border-bottom: 1px solid var(--line);
-    transition: color 0.2s ease, padding 0.2s ease;
-  }
-  .link-item:last-child { border-bottom: none; }
-  .link-item:hover { color: var(--accent); padding-left: 4px; }
-  .link-item span.arrow { color: var(--txt-dim); transition: color 0.2s; }
-  .link-item:hover span.arrow { color: var(--accent); }
-
-  /* ---------- Footer ---------- */
-  footer {
-    padding: 26px 0 44px;
-    border-top: 1px solid var(--line);
-    color: var(--txt-dim);
-    font-size: 13px;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 14px;
-  }
-  footer a { color: var(--txt-dim); text-decoration: none; transition: color 0.2s; }
-  footer a:hover { color: var(--accent); }
-
-  @media (max-width: 820px) {
-    .layout { grid-template-columns: 1fr; }
-    aside { position: static; order: 2; }
-  }
-</style>
+<link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
+<script>
+  (function(){
+    var t=localStorage.getItem('theme');
+    if(t==='dark')document.documentElement.setAttribute('data-theme','dark');
+    else if(t==='light')document.documentElement.setAttribute('data-theme','light');
+  })();
+</script>
 </head>
-<body>
-  <div class="wrap">
+<body class="js">
+<!-- ===== Navigation ===== -->
+<header style="position:sticky;top:0;z-index:50;background:var(--header-bg);
+  -webkit-backdrop-filter:saturate(180%) blur(12px);
+  backdrop-filter:saturate(180%) blur(12px);
+  border-bottom:1px solid var(--line);">
+  <div class="wrapper" style="display:flex;align-items:center;
+    justify-content:space-between;gap:16px;height:64px;">
+    <a href="{{ '/' | relative_url }}"
+       style="display:inline-flex;align-items:center;gap:10px;
+         font-family:var(--font-serif);font-size:19px;font-weight:600;
+         color:var(--text);text-decoration:none;letter-spacing:0.2px;">
+      <span style="width:8px;height:8px;border-radius:50%;
+        background:var(--accent);flex:none;"></span>
+      {{ site.title }}
+    </a>
+    <nav style="display:flex;align-items:center;gap:4px;">
+      <a href="#posts" class="nav-link">文章</a>
+      <a href="#about" class="nav-link">关于</a>
+      <a href="https://github.com/zhaojs12345" target="_blank"
+         rel="noopener" class="nav-link">GitHub</a>
+      <button class="theme-toggle" id="themeToggle" aria-label="切换主题">
+        <svg class="icon-sun" viewBox="0 0 20 20" fill="none"
+             stroke="currentColor" stroke-width="1.6">
+          <circle cx="10" cy="10" r="4"/>
+          <line x1="10" y1="2" x2="10" y2="4"/>
+          <line x1="10" y1="16" x2="10" y2="18"/>
+          <line x1="2" y1="10" x2="4" y2="10"/>
+          <line x1="16" y1="10" x2="18" y2="10"/>
+          <line x1="4.2" y1="4.2" x2="5.6" y2="5.6"/>
+          <line x1="14.4" y1="14.4" x2="15.8" y2="15.8"/>
+          <line x1="4.2" y1="15.8" x2="5.6" y2="14.4"/>
+          <line x1="14.4" y1="5.6" x2="15.8" y2="4.2"/>
+        </svg>
+        <svg class="icon-moon" viewBox="0 0 20 20" fill="none"
+             stroke="currentColor" stroke-width="1.6">
+          <path d="M17.5 12A7.5 7.5 0 0 1 8 2.5a7.5 7.5 0 1 0 9.5 9.5z"/>
+        </svg>
+      </button>
+    </nav>
+  </div>
+</header>
 
-    <div class="topbar">
-      <div class="brand">
-        <span class="dot"></span>
-        <span class="name">{{ site.title }}</span>
-        <span class="tag">Embodied AI · Chip Ecosystem</span>
+<!-- ===== Hero ===== -->
+<div class="wrapper">
+  <section class="hero reveal">
+    <p class="kicker">Personal Knowledge Base</p>
+    <h1>{{ site.title }}</h1>
+    <p class="lede">
+      {{ site.description }} ——
+      在<strong style="color:var(--text)">具身智能</strong>与<strong style="color:var(--text)">AI 芯片生态</strong>两条主线上,沉淀学习与思考的痕迹。
+    </p>
+    <div class="hero-meta">
+      {% assign total = 0 %}
+      {% for cat in site.categories %}{% assign total = total | plus: cat[1].size %}{% endfor %}
+      <div>
+        <span class="num">{{ total }}</span>
+        <span class="lbl">篇文章</span>
+      </div>
+      <div>
+        <span class="num">{{ site.categories | size }}</span>
+        <span class="lbl">个专题</span>
       </div>
     </div>
+  </section>
 
-    <!-- 具身科技风 SVG 横幅(内嵌,不依赖外部图片,永不失效) -->
-    <div class="hero">
-      <svg viewBox="0 0 1180 340" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="具身智能主题横幅">
-        <defs>
-          <linearGradient id="bgGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#162744"/>
-            <stop offset="0.55" stop-color="#0f1c33"/>
-            <stop offset="1" stop-color="#0a1322"/>
-          </linearGradient>
-          <radialGradient id="glowA" cx="0.78" cy="0.35" r="0.5">
-            <stop offset="0" stop-color="#45f0d6" stop-opacity="0.55"/>
-            <stop offset="1" stop-color="#45f0d6" stop-opacity="0"/>
-          </radialGradient>
-          <radialGradient id="glowB" cx="0.25" cy="0.7" r="0.6">
-            <stop offset="0" stop-color="#5e9bff" stop-opacity="0.45"/>
-            <stop offset="1" stop-color="#5e9bff" stop-opacity="0"/>
-          </radialGradient>
-          <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stop-color="#45f0d6"/>
-            <stop offset="1" stop-color="#5e9bff"/>
-          </linearGradient>
-        </defs>
-
-        <rect width="1180" height="340" fill="url(#bgGrad)"/>
-        <rect width="1180" height="340" fill="url(#glowA)"/>
-        <rect width="1180" height="340" fill="url(#glowB)"/>
-
-        <!-- 网格 -->
-        <g stroke="#78beff" stroke-opacity="0.09" stroke-width="1">
-          <path d="M0 40 H1180 M0 100 H1180 M0 160 H1180 M0 220 H1180 M0 280 H1180"/>
-          <path d="M60 0 V340 M180 0 V340 M300 0 V340 M420 0 V340 M540 0 V340 M660 0 V340 M780 0 V340 M900 0 V340 M1020 0 V340 M1140 0 V340"/>
-        </g>
-
-        <!-- 右侧:具身节点网络(类神经/传感拓扑) -->
-        <g stroke="url(#lineGrad)" stroke-opacity="0.5" stroke-width="1.4" fill="none">
-          <path d="M760 90 L880 60 L1000 120 L1080 90"/>
-          <path d="M760 90 L850 170 L1000 120"/>
-          <path d="M850 170 L930 250 L1050 230"/>
-          <path d="M1000 120 L1050 230"/>
-          <path d="M880 60 L930 250"/>
-          <path d="M760 90 L820 260"/>
-        </g>
-        <g fill="#45f0d6">
-          <circle cx="760" cy="90" r="5.5"/>
-          <circle cx="880" cy="60" r="4.5"/>
-          <circle cx="1000" cy="120" r="6.5"/>
-          <circle cx="1080" cy="90" r="4"/>
-          <circle cx="850" cy="170" r="5"/>
-          <circle cx="930" cy="250" r="6"/>
-          <circle cx="1050" cy="230" r="4.5"/>
-          <circle cx="820" cy="260" r="4"/>
-        </g>
-        <g fill="#5e9bff" opacity="0.85">
-          <circle cx="880" cy="60" r="2"/>
-          <circle cx="1080" cy="90" r="2"/>
-          <circle cx="1050" cy="230" r="2"/>
-        </g>
-
-        <!-- 脉冲圆环 -->
-        <circle cx="1000" cy="120" r="14" fill="none" stroke="#45f0d6" stroke-opacity="0.5" stroke-width="1.5">
-          <animate attributeName="r" values="8;30;8" dur="4s" repeatCount="indefinite"/>
-          <animate attributeName="stroke-opacity" values="0.6;0;0.6" dur="4s" repeatCount="indefinite"/>
-        </circle>
-      </svg>
-      <div class="hero-text">
-        <h1>{{ site.title }}</h1>
-        <p>{{ site.description }} —— 在<strong>具身智能</strong>与<strong>AI 芯片生态</strong>两条主线上,记录学习与思考的痕迹。</p>
-      </div>
+  <!-- ===== Topic overview cards ===== -->
+  <div class="topics">
+    {% assign sections = "具身智能,芯片生态" | split: "," %}
+    {% assign labels = "Embodied AI,Chip Ecosystem" | split: "," %}
+    {% assign descs  = "机器人、感知、控制与策略学习的交叉地带——从数理基础到前沿方法的系统梳理,具身平台,感知融合,强化学习。|覆盖 CUDA 生态与昇腾、寒武纪、昆仑芯、燧原、摩尔线程、海光等国产 AI 芯片的 SDK、框架适配与开发者社区指南。" | split: "|" %}
+    {% for i in (0..1) %}
+    {% assign sec  = sections[i] %}
+    {% assign lbl  = labels[i] %}
+    {% assign desc = descs[i] %}
+    {% assign cnt  = site.categories[sec] | size %}
+    <div class="topic reveal" style="text-decoration:none;cursor:default;">
+      <span class="en">{{ lbl }}</span>
+      <h3>{{ sec }}</h3>
+      <p>{{ desc }}</p>
+      <span class="count">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"
+             stroke="currentColor" stroke-width="1.6">
+          <path d="M2 12.5V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v8.5"/>
+          <line x1="2" y1="12.5" x2="14" y2="12.5"/>
+        </svg>
+        {{ cnt }} 篇
+      </span>
     </div>
-
-    <div class="layout">
-
-      <!-- 主体:文章列表 + 筛选 -->
-      <main>
-        <div class="toolbar">
-          <input type="text" id="search" class="search" placeholder="搜索全部文章的标题或摘要…" autocomplete="off">
-        </div>
-
-        {% assign sections = "具身智能,芯片生态" | split: "," %}
-        {% for sec in sections %}
-        {% assign visible_posts = site.categories[sec] | where_exp: "p", "p.hidden != true" %}
-        <section class="cat-section" data-section="{{ sec }}" data-per-page="10">
-          <div class="cat-head">
-            <span class="cat-bar"></span>
-            <h2>{{ sec }}</h2>
-            <span class="cat-count">{{ visible_posts | size }} 篇</span>
-          </div>
-          <div class="posts">
-            {% for post in visible_posts %}
-            <a class="card post-item"
-               href="{{ post.url | relative_url }}"
-               data-title="{{ post.title | downcase }}"
-               data-excerpt="{{ post.excerpt | strip_html | downcase }}">
-              <h3>{{ post.title }}</h3>
-              <span class="go">↗</span>
-            </a>
-            {% else %}
-            <div class="empty">这个分区暂无文章,很快就会有新的内容。</div>
-            {% endfor %}
-          </div>
-          <nav class="pager" aria-label="{{ sec }}分页"></nav>
-        </section>
-        {% endfor %}
-        <div class="no-result" id="noResult">没有匹配的文章,换个关键词试试。</div>
-      </main>
-
-      <!-- 角落:关于 + 友情链接 -->
-      <aside>
-        <div class="side-card">
-          <h4>关于</h4>
-          <p>你好,我是 <strong>{{ site.author.name }}</strong>。
-          这里沉淀两条主线的笔记:<strong>具身智能</strong>(机器人、感知、控制与学习),以及 <strong>AI 芯片生态</strong>(CUDA 与国产芯片的 SDK、框架适配)。</p>
-        </div>
-        <div class="side-card">
-          <h4>友情链接</h4>
-          <a class="link-item" href="https://llyyyyl.github.io/" target="_blank" rel="noopener">
-            llyyyyl <span class="arrow">↗</span>
-          </a>
-        </div>
-      </aside>
-
-    </div>
-
-    <footer>
-      <span>© {{ site.time | date: "%Y" }} {{ site.author.name }}</span>
-      <span><a href="https://github.com/zhaojs12345" target="_blank" rel="noopener">GitHub</a></span>
-    </footer>
-
+    {% endfor %}
   </div>
 
+  <!-- ===== Feed ===== -->
+  <div class="feed" id="posts">
+    <div class="feed-head reveal">
+      <h2>全部文章</h2>
+    </div>
+
+    <div class="toolbar reveal">
+      <div class="filters" id="filters">
+        <button class="chip is-active" data-filter="all">全部</button>
+        {% for sec in sections %}
+        <button class="chip" data-filter="{{ sec }}">{{ sec }}</button>
+        {% endfor %}
+      </div>
+      <label class="search" for="search">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7">
+          <circle cx="8.5" cy="8.5" r="5.5"/>
+          <line x1="13" y1="13" x2="17" y2="17"/>
+        </svg>
+        <input type="text" id="search"
+               placeholder="搜索标题或摘要…" autocomplete="off">
+      </label>
+    </div>
+
+    {% for sec in sections %}
+    {% assign visible_posts = site.categories[sec] | where_exp: "p", "p.hidden != true" %}
+    <section class="section cat-section reveal"
+             data-section="{{ sec }}" data-per-page="10">
+      <div class="section-head">
+        <h3>{{ sec }}</h3>
+        <span class="cat-count">{{ visible_posts | size }} 篇</span>
+      </div>
+      {% for post in visible_posts %}
+      <a class="entry post-item"
+         href="{{ post.url | relative_url }}"
+         data-section="{{ sec }}"
+         data-title="{{ post.title | downcase }}"
+         data-excerpt="{{ post.excerpt | strip_html | downcase }}">
+        <span class="entry-date">
+          {{ post.date | date: "%Y-%m-%d" }}
+        </span>
+        <span>
+          <h4 class="entry-title">{{ post.title }}</h4>
+          {% if post.excerpt %}
+          <p class="entry-excerpt">{{ post.excerpt | strip_html }}</p>
+          {% endif %}
+          <span class="entry-foot">
+            <span>{{ sec }}</span>
+          </span>
+        </span>
+      </a>
+      {% else %}
+      <div class="empty">暂无文章,敬请期待。</div>
+      {% endfor %}
+      <nav class="pager" aria-label="{{ sec }}分页"></nav>
+    </section>
+    {% endfor %}
+
+    <div class="no-result" id="noResult">没有匹配的文章,换个关键词试试。</div>
+  </div>
+
+  <!-- ===== About + Links ===== -->
+  <div class="about" id="about">
+    <div class="panel reveal">
+      <h2>关于</h2>
+      <p>你好,我是 <strong>{{ site.author.name }}</strong>。<br><br>
+      这里沉淀两条主线的笔记:<strong>具身智能</strong>(机器人、感知、控制与学习),
+      以及 <strong>AI 芯片生态</strong>(CUDA 与国产芯片的 SDK、框架适配)。<br><br>
+      一切记录都在持续更新中。</p>
+    </div>
+    <div class="panel reveal">
+      <h2>友情链接</h2>
+      <a class="link-item" href="https://llyyyyl.github.io/"
+         target="_blank" rel="noopener">
+        llyyyyl <span class="arrow">↗</span>
+      </a>
+    </div>
+  </div>
+
+</div><!-- /.wrapper -->
+
+<!-- ===== Footer ===== -->
+<footer style="margin-top:84px;padding:34px 0;border-top:1px solid var(--line);">
+  <div class="wrapper">
+    <div style="display:flex;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;gap:14px;font-size:13.5px;color:var(--muted);">
+      <span>© {{ site.time | date: "%Y" }} {{ site.author.name }}</span>
+      <span>
+        <a href="https://github.com/zhaojs12345" target="_blank" rel="noopener"
+           style="color:var(--muted);text-decoration:none;">GitHub</a>
+      </span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .nav-link {
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    color: var(--text-soft);
+    text-decoration: none;
+    transition: background 0.18s, color 0.18s;
+  }
+  .nav-link:hover { background: var(--bg-sunk); color: var(--text); }
+</style>
+
 <script>
-  (function () {
-    var search = document.getElementById('search');
-    var allPosts = Array.prototype.slice.call(document.querySelectorAll('.post-item'));
-    var noResult = document.getElementById('noResult');
+(function () {
+  /* ---- Theme toggle ---- */
+  var root = document.documentElement;
+  var btn  = document.getElementById('themeToggle');
+  btn.addEventListener('click', function () {
+    var isDark = root.getAttribute('data-theme') === 'dark' ||
+      (!root.getAttribute('data-theme') &&
+       window.matchMedia('(prefers-color-scheme: dark)').matches);
+    var next = isDark ? 'light' : 'dark';
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
 
-    // 为每个分区建立独立的分页状态
-    var sections = Array.prototype.slice.call(document.querySelectorAll('.cat-section')).map(function (el) {
-      return {
-        el: el,
-        perPage: parseInt(el.getAttribute('data-per-page'), 10) || 10,
-        pager: el.querySelector('.pager'),
-        posts: Array.prototype.slice.call(el.querySelectorAll('.post-item')),
-        page: 1
-      };
-    });
-
-    function matches(p, q) {
-      if (q === '') return true;
-      var text = (p.getAttribute('data-title') || '') + ' ' + (p.getAttribute('data-excerpt') || '');
-      return text.indexOf(q) !== -1;
-    }
-
-    function renderPager(sec, totalPages) {
-      var pager = sec.pager;
-      pager.innerHTML = '';
-      if (totalPages <= 1) return;
-
-      function mkBtn(label, page, opts) {
-        opts = opts || {};
-        var b = document.createElement('button');
-        b.textContent = label;
-        if (opts.active) b.className = 'active';
-        if (opts.disabled) b.disabled = true;
-        else b.addEventListener('click', function () {
-          sec.page = page;
-          apply();
-          sec.el.querySelector('.cat-head').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-        pager.appendChild(b);
-      }
-
-      mkBtn('‹', sec.page - 1, { disabled: sec.page === 1 });
-      for (var i = 1; i <= totalPages; i++) {
-        mkBtn(String(i), i, { active: i === sec.page });
-      }
-      mkBtn('›', sec.page + 1, { disabled: sec.page === totalPages });
-    }
-
-    function apply() {
-      var q = (search.value || '').trim().toLowerCase();
-      var totalShown = 0;
-
-      sections.forEach(function (sec) {
-        var matched = sec.posts.filter(function (p) { return matches(p, q); });
-        var totalPages = Math.max(1, Math.ceil(matched.length / sec.perPage));
-        if (sec.page > totalPages) sec.page = totalPages;
-
-        var start = (sec.page - 1) * sec.perPage;
-        var end = start + sec.perPage;
-
-        sec.posts.forEach(function (p) { p.style.display = 'none'; });
-        matched.slice(start, end).forEach(function (p) { p.style.display = ''; });
-
-        // 搜索且本分区无命中时,隐藏整个分区
-        sec.el.style.display = (q !== '' && matched.length === 0) ? 'none' : '';
-        renderPager(sec, totalPages);
-        totalShown += matched.length;
+  /* ---- Filter chips ---- */
+  var chips = document.querySelectorAll('.chip');
+  var allSecs = document.querySelectorAll('.cat-section');
+  chips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      chips.forEach(function (c) { c.classList.remove('is-active'); });
+      chip.classList.add('is-active');
+      var f = chip.getAttribute('data-filter');
+      allSecs.forEach(function (sec) {
+        sec.style.display = (f === 'all' || sec.getAttribute('data-section') === f)
+          ? '' : 'none';
       });
-
-      noResult.style.display = (allPosts.length && totalShown === 0) ? 'block' : 'none';
-    }
-
-    search.addEventListener('input', function () {
-      // 搜索变化时各分区回到第一页
-      sections.forEach(function (sec) { sec.page = 1; });
-      apply();
     });
+  });
 
+  /* ---- Search + Pagination ---- */
+  var search   = document.getElementById('search');
+  var allPosts = Array.prototype.slice.call(document.querySelectorAll('.post-item'));
+  var noResult = document.getElementById('noResult');
+
+  var sections = Array.prototype.slice.call(allSecs).map(function (el) {
+    return {
+      el:      el,
+      perPage: parseInt(el.getAttribute('data-per-page'), 10) || 10,
+      pager:   el.querySelector('.pager'),
+      posts:   Array.prototype.slice.call(el.querySelectorAll('.post-item')),
+      page:    1
+    };
+  });
+
+  function matches(p, q) {
+    if (!q) return true;
+    var text = (p.getAttribute('data-title')   || '') + ' ' +
+               (p.getAttribute('data-excerpt') || '');
+    return text.indexOf(q) !== -1;
+  }
+
+  function renderPager(sec, totalPages) {
+    sec.pager.innerHTML = '';
+    if (totalPages <= 1) return;
+    function mkBtn(label, page, opts) {
+      opts = opts || {};
+      var b = document.createElement('button');
+      b.textContent = label;
+      if (opts.active)   b.className = 'active';
+      if (opts.disabled) b.disabled  = true;
+      else b.addEventListener('click', function () {
+        sec.page = page;
+        apply();
+        sec.el.querySelector('.section-head')
+          .scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+      sec.pager.appendChild(b);
+    }
+    mkBtn('‹', sec.page - 1, { disabled: sec.page === 1 });
+    for (var i = 1; i <= totalPages; i++) mkBtn(String(i), i, { active: i === sec.page });
+    mkBtn('›', sec.page + 1, { disabled: sec.page === totalPages });
+  }
+
+  function apply() {
+    var q = (search.value || '').trim().toLowerCase();
+    var total = 0;
+    sections.forEach(function (sec) {
+      var matched    = sec.posts.filter(function (p) { return matches(p, q); });
+      var totalPages = Math.max(1, Math.ceil(matched.length / sec.perPage));
+      if (sec.page > totalPages) sec.page = totalPages;
+      var start = (sec.page - 1) * sec.perPage;
+      var end   = start + sec.perPage;
+      sec.posts.forEach(function (p) { p.style.display = 'none'; });
+      matched.slice(start, end).forEach(function (p) { p.style.display = ''; });
+      sec.el.style.display = (q && matched.length === 0) ? 'none' : '';
+      renderPager(sec, totalPages);
+      total += matched.length;
+    });
+    noResult.style.display = (allPosts.length && total === 0) ? 'block' : 'none';
+  }
+
+  search.addEventListener('input', function () {
+    sections.forEach(function (s) { s.page = 1; });
     apply();
-  })();
+  });
+
+  apply();
+
+  /* ---- Scroll-reveal ---- */
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.07 });
+    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function (el) {
+      el.classList.add('is-in');
+    });
+  }
+})();
 </script>
 </body>
 </html>
